@@ -9,11 +9,12 @@
 
 \section{Introduction}
 
-When deployed to a disaster-stricken area, first responders need to be able to efficiently communicate their location and other 
-information to their base camp. However, communication infrastructure is often unreliable or inaccessible during these crises. 
-To solve this problem, we design an ad-hoc wireless network of portable devices that allows responders to send messages to their 
-base camp in a reliable, efficient, and safe way. Our rigorous design accounts for the rapid changes in network topology that 
-occur as the responders move around, as well as the possible presence of malicious agents in the field. 
+When deployed to a disaster-stricken area, first responders need to be able to efficiently communicate their
+location and other information to their base camp. However, communication infrastructure is often unreliable
+or inaccessible during these crises. To solve this problem, we design an ad-hoc wireless network of portable
+devices that allows responders to send messages to their base camp in a reliable, efficient, and safe way.
+Our rigorous design accounts for the rapid changes in network topology that  occur as the responders move 
+around, as well as the possible presence of malicious agents in the field. 
 
 \subsection{Design Overview}
 
@@ -22,6 +23,23 @@ occur as the responders move around, as well as the possible presence of malicio
 \section{Design}
 
 \subsection{Routing tables}
+
+Initially, and every thirty seconds onwards, the network undergoes the following update procedure that 
+discovers changes in the network topology:
+
+\begin{itemize}
+  \item Each node issues one scan() message to populate its neighbor table.
+  \item The base sends a route update broadcast() message to its neighbors, notifying them they are one hop
+        away from the base. Each of these nodes updates their routing tables.
+  \item Each of the neighbors from step 2 repeats that step themselves, aggregating the cost metric
+        appropriately. Each node discards every broadcast() it receives after the first. 
+        This procedure continues until all nodes have received a broadcast, and takes time proportional 
+        to the diameter of the network.
+\end{itemize}
+
+\noindent The addition of new nodes to the network is also handled by this procedure. After this procedure, 
+each node has multiple paths to the base and can begin using the metrics to estimate which paths are best.
+
 
 \subsection{Cost algorithm}
 
