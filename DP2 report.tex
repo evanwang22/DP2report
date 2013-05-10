@@ -13,7 +13,7 @@ When deployed to a disaster-stricken area, first responders need to be able to e
 location and other information to their base camp. However, communication infrastructure is often unreliable
 or inaccessible during these crises. To solve this problem, we design an ad-hoc wireless network of portable
 devices that allows responders to send messages to their base camp in a reliable, efficient, and safe way.
-Our rigorous design accounts for the rapid changes in network topology that  occur as the responders move 
+Our rigorous design accounts for the rapid changes in network topology that occur as the responders move 
 around, as well as the possible presence of malicious agents in the field. 
 
 \subsection{Design Overview}
@@ -24,26 +24,49 @@ around, as well as the possible presence of malicious agents in the field.
 
 \subsection{Routing tables}
 
-Initially, and every thirty seconds onwards, the network undergoes the following update procedure that 
-discovers changes in the network topology:
+An effective and efficient routing protocol is necessary for nodes to determine the best paths to send
+packets to the base without constantly congesting the network.
+\\
 
-\begin{itemize}
-  \item Each node issues one scan() message to populate its neighbor table.
-  \item The base sends a route update broadcast() message to its neighbors, notifying them they are one hop
-        away from the base. Each of these nodes updates their routing tables.
-  \item Each of the neighbors from step 2 repeats that step themselves, aggregating the cost metric
-        appropriately. Each node discards every broadcast() it receives after the first. 
-        This procedure continues until all nodes have received a broadcast, and takes time proportional 
-        to the diameter of the network.
-\end{itemize}
+\noindent Our routing protocol is based on a link-state advertisement scheme in which neighboring nodes 
+inform each other of incremental changes. Upon receiving an advertisement, a node will use the 
+\textsc{broadcast} function to forward it to all its neighbors. As a result of this flooding process,
+each node's routing table will contain a complete map of the network. Then, each node will independently
+run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
+have a consistent view of the topology and the same metric, resulting routes at different nodes will
+correspond to a valid path.
+\\
 
-\noindent The addition of new nodes to the network is also handled by this procedure. After this procedure, 
-each node has multiple paths to the base and can begin using the metrics to estimate which paths are best.
+\noindent There are two data structures which our routing protocol uses: link-state advertisements and
+routing tables. 
+\\
 
+\noindent Link-state advertisements have the following format:
+\\
+
+\noindent Routing tables
+\\
+
+\noindent Initially, the network undergoes the following procedure that discovers the network topology:
+
+\begin{enumerate}
+  \item Each node constructs its link-state advertisement by calling \textsc{scan}. 
+  \item Nodes begin to flood the network with their LSAs, and build up their routing tables based on
+  the advertisements they receive.
+  \item Once all the LSAs have been discarded according to the routing table protocol, each node will have
+  a complete map of the network. This will take time proportional to the diameter of the network, because
+  LSAs must be propogated throughout the entire network.
+\end{enumerate}
+
+\noindent The addition of new nodes to the network is also handled by the above procedure. However, the
+network utilization when adding one new node to the network is much smaller than the utilization of the 
+initial procedure, because only one link-state advertisement created. Forwarding it  
 
 \subsection{Cost algorithm}
 
 \subsection{Encryption}
+
+Jamming is a always a potential problem
 
 \section{Analysis}
 
