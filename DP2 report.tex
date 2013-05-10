@@ -3,7 +3,7 @@
 \usepackage[margin=1.25in]{geometry}
 \usepackage{graphicx}
 \usepackage{clrscode4e}
-\usepackage{listings}
+
 
 \begin{document}
 
@@ -64,7 +64,78 @@ initial procedure, because only one link-state advertisement created. Forwarding
 
 \subsection{Cost algorithm}
 
-\subsection{Encryption}
+\subsection{Authentication}
+When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent a malicious adversary). In the protocol presented in this paper, the base will use the RSA public-key cryptosystem to generate private and public-keys that it will then distribute to the first responders. In addition, everyone will have a table with an entry for each fellow first responder containing two important numbers:
+
+\begin{itemize}
+\item[1] The first responder's public-key. 
+\item[2] The first responder's most recent message ID.
+\end{itemize}
+
+From here on, I will use the term node and first responders interchangeably.
+
+\subsubsection{The Table for Authentication}
+Recall that everyone will have a table with an entry for each a fellow node. The table will containing two important numbers for each node; the node's public-key and the node's latest message ID number. The latest message ID number is a counter-like number inserted to every message a node sends such that each node can idenfity ruplicate messages and be protected from malicious reply attacks. Consider Table 1 for a depiction of this table:
+
+\begin{table}[ht]
+\caption{Athentication Table} % title of Table
+\centering % used for centering table
+\begin{tabular}{c c c } % centered columns (4 columns)
+\hline
+\hline %inserts double horizontal lines
+First Responder Number & Public-Key & Latest Message ID  \\[0.5ex] % inserts table
+%heading
+\hline % inserts single horizontal line
+0 [base] & 69 & 669\\
+1 & 50 & 837\\
+% inserting body of the table
+2 & 47 & 877 \\
+3 & 45 & 300\\ [1ex]
+% [1ex] adds vertical space
+\hline
+%inserts single line
+\end{tabular}
+\label{table:nonlin}
+% is used to refer this table in the text
+\end{table}
+
+\subsubsection{Signing Mechanism}
+At the initialization phase of the Ad-hoc network, all nodes are required that they first report to the base before departing. 
+At this step of the protocol, each of the nodes will be assigned their own private-key. \\
+Furthermore, because at this step of the protocol the total size of the network is known, every node will be able to have an initial table with every public-key assigned so far. 
+This will be quintessential for nodes' capability of verifying messages.
+\\
+The system should accept messages only from first responders. Therefore it will be very important that nodes sign their messages with their private-key. Consider the following function that signs messages:
+
+$$\textsc{SIGN}(message, my\_secret\_key) = \sigma_{A}$$
+
+The function returns a binary string $\sigma_{A}$, corresponding to the output of signing the message with the node's secret key. Since each private key assigned for each node is unique, each other node will need the corresponding public key to verify the signature.
+
+\subsection{Authentication Mechanism}
+Even though it is important to sign messages for fellow nodes, its equally important that nodes are also able to verify the messages they receive. 
+Therefore, consider the following verification function that takes a specific public-key and verifies if the chosen public-key matches the private-key used to sign the message:
+
+$$\textsc{VERIFY}(signature, corooresponding\_public\_key) =  b $$
+
+Notice that when we say, matches, we mean that verify is indeed the inverse function of sign when the correct public-key is applied relative to the correct private-key used to sign the message.
+The output of $\textsc{VERIFY}$ will be either, the boolean true if the verification passes with that public-key, or false if it doesn't. If the verification fails, then the message will not be forwarded. 
+\\
+\\
+The way that a node decides which public-keys to apply is simple, since it knows it neighboring nodes, it indexes the Authentication table using the node's number and then obtains the corresponding public key.
+Once the authentication has passed, then the node will use the following function to get the message:
+
+$$\textsc{GET\_MESSAGE}(message, corresponding\_public\_key) = m$$
+\\
+
+\subsubsection{Dealing with reply attacks }
+
+
+-------------
+
+
+\subsubsection{Scalability and updating the Authentication table}
+
+In summary, nodes will always apply their private-keys to sign any message they need to send. To verify and get the message, nodes will use the corresponding public-key to get the message and pass the verification.
 
 Jamming is a always a potential problem
 
