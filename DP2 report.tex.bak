@@ -43,7 +43,18 @@ each node has multiple paths to the base and can begin using the metrics to esti
 
 \subsection{Cost algorithm}
 
-\subsection{Encryption}
+\subsection{Security}
+When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages. In Our protocol, the base will use the RSA public-key cryptosystem to generate private and public-keys that it will the distribute to the first responders.
+
+From here on, I will use the term node and first responders interchangeably.
+
+At the initialization phase of the Ad-hoc network, all nodes are required that they first report to the base before departing. At this step of the protocol, each of the nodes will be assigned their own private-key. Furthermore, because at this step of the protocol the total size of the network is known, every node will be able to have an initial table with every public-key assigned so far. This will be quintessential for nodes capability of verifying messages.
+
+The system should accept messages only from first responders. Therefore it will be very important that nodes sign their messages with their private-key.
+
+Let: $Sk_{A} \ : \ denote \ the \ private-key \ of \ A$
+
+$$\sigma_{Pr_{A}}()$$
 
 \section{Analysis}
 
