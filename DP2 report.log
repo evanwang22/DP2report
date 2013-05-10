@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.7.12)  10 MAY 2013 00:12
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.7.12)  10 MAY 2013 02:38
 entering extended mode
  %&-line parsing enabled.
 **"DP2 report.tex"
@@ -67,6 +67,15 @@ File: pdftex.def 2010/03/12 v0.04p Graphics/color for pdfTeX
 ))
 \Gin@req@height=\dimen107
 \Gin@req@width=\dimen108
+) (./clrscode4e.sty
+Package: clrscode4e 
+\c@codelinenumber=\count91
+\c@indent=\count92
+\digitwidth=\skip43
+\savecode=\box26
+\codeboxwidth=\skip44
+\c@linenumberwidth=\count93
+\c@thisindent=\count94
 ) (./DP2 report.aux)
 \openout1 = `"DP2 report.aux"'.
 
@@ -82,6 +91,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 8.
 LaTeX Font Info:    ... okay on input line 8.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 8.
 LaTeX Font Info:    ... okay on input line 8.
+
 *geometry auto-detecting driver*
 *geometry detected driver: pdftex*
 -------------------- Geometry parameters
@@ -125,15 +135,15 @@ driver: pdftex
 -----------------------
 (/usr/share/texmf-texlive/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count91
+\scratchcounter=\count95
 \scratchdimen=\dimen109
-\scratchbox=\box26
-\nofMPsegments=\count92
-\nofMParguments=\count93
+\scratchbox=\box27
+\nofMPsegments=\count96
+\nofMParguments=\count97
 \everyMPshowfont=\toks16
-\MPscratchCnt=\count94
+\MPscratchCnt=\count98
 \MPscratchDim=\dimen110
-\MPnumerator=\count95
+\MPnumerator=\count99
 \everyMPtoPDFconversion=\toks17
 )
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 31.
@@ -148,31 +158,42 @@ Missing character: There is no ú in font cmr10!
 Missing character: There is no ‚ in font cmr10!
 Missing character: There is no Ä in font cmr10!
 Missing character: There is no ù in font cmr10!
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 55.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 55.
  [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2] (./DP2 report.aux) ) 
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 62.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 62.
+
+Underfull \hbox (badness 10000) in paragraph at lines 99--105
+
+ []
+
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 106--108
+
+ []
+
+[3] (./DP2 report.aux) ) 
 Here is how much of TeX's memory you used:
- 1291 strings out of 495061
- 17090 string characters out of 1182621
- 71239 words of memory out of 3000000
- 4512 multiletter control sequences out of 15000+50000
- 4850 words of font info for 18 fonts, out of 3000000 for 9000
+ 1414 strings out of 495061
+ 18218 string characters out of 1182621
+ 74208 words of memory out of 3000000
+ 4630 multiletter control sequences out of 15000+50000
+ 5459 words of font info for 20 fonts, out of 3000000 for 9000
  28 hyphenation exceptions out of 8191
- 25i,5n,32p,483b,143s stack positions out of 5000i,500n,10000p,200000b,50000s
-</
-usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/t
-exmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-texliv
-e/fonts/type1/public/amsfonts/cm/cmmi5.pfb></usr/share/texmf-texlive/fonts/type
-1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts/type1/public/ams
-fonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cms
-y10.pfb>
-Output written on "DP2 report.pdf" (2 pages, 72859 bytes).
+ 25i,7n,32p,659b,192s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
+m/cmbx10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmbx12.pf
+b></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/sh
+are/texmf-texlive/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texmf-t
+exlive/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texmf-texlive/fonts
+/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/publi
+c/amsfonts/cm/cmsy10.pfb>
+Output written on "DP2 report.pdf" (3 pages, 97706 bytes).
 PDF statistics:
- 33 PDF objects out of 1000 (max. 8388607)
+ 40 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
