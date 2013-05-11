@@ -51,7 +51,7 @@ When designing a communication system for first responders, its important that f
 \item[2] The first responder's most recent message ID.
 \end{itemize}
 
-From here on, I will use the term node and first responders interchangeably.
+From here on, we will use the term node and first responders interchangeably.
 
 \subsection{Initilization}
 At the initialization phase of the Ad-hoc network, all nodes are required that they first report to the base before departing. 
@@ -60,7 +60,7 @@ Since at this step of the protocol we know exactly which nodes are going to be a
 This will be quintessential for nodes' capability of verifying messages.
 
 \subsubsection{The Table for Authentication}
-Recall that everyone will have a table with an entry for each ally node. The table will containing two important numbers for each node; the node's public-key and the node's latest message ID number. The latest message ID number is a counter-like number inserted to every message a node sends such that each node can idenfity ruplicate messages and be protected from malicious nodes trying to plot repaly attacks. Consider Table 1 for a depiction of this table:
+Recall that everyone will have a table with an entry for each ally node. The table will containing two important numbers for each node; the node's public-key and the node's latest message ID number. The latest message ID number is a counter-like number inserted to every message a node sends such that each node can idenfity ruplicate messages and be protected from malicious nodes trying to plot replay attacks. Consider Table 1 for a depiction of this table:
 
 \begin{table}[ht]
 \caption{Athentication Table} % title of Table
@@ -113,7 +113,7 @@ $$\textsc{GET\_MESSAGE}(message, corresponding\_public\_key) = m$$
 
 This function returns the corresponding message when applying the inverse function of the sign function using the correct public-key.
 
-\subsubsection{Dealing with repaly attacks }
+\subsubsection{Dealing with replay attacks }
 
 It is also a problem when malicious nodes get a valid signed message and then potentially try to flood the network with unnecessary messages. The way that our protocol deals with this problem is that, all messages are marked with a message ID number that is a counter that is matched to a specific node. This counter is increased everytime before a message is sent suring the signed procedure. Therefore the format of a message looks like this:
 
@@ -150,6 +150,12 @@ However, we can not ignore the potential scalability problem of this initial des
 Since the private-keys are generated with RSA, the probability that a malicious node guesses a key and is able to find a colliding signature is negligible. This statement holds even when the node is able to see valid signatures because its extremely hard to obtain the private-key. This is true if one believes that factoring large numbers is an intractable problem with the present knowledge in computer science. Furthermore, even if a malicious node generates his own private-key, nodes are extremely unlikely to accept any messages that malicious node could sign. The only case where a malicious node could obtain a valid private-key, is if the key that he generated collides with a private-key that was already assigned. The probability of this even is extremely unlikely. The keys used for RSA are usually of length 2048 bits, therefore, the probability that one key generates by a malicious node a collides with an already generated private key is $2^{2048}$. The likelihood of collisions starts being a problem only when the graph start getting exponentially large. This case is extremely unlikely and even if this is the case, the number of bits for keys could just be increased, making RSA again more secure.\\
 
 The authentication mechanism presented is also secure against replay attacks. If a malicious node tries to forward a valid message, first responders will reject the message (or messages), because they will extract the message ID and compare it with the latest message ID they have received. If the message ID is outdated, then first responders will not forward during replay attacks.
+
+If one wanted to relax the assumption that nodes or the base could be overrun and therefore some or all the keys in the network could be stolen one can make some improvments to this design. Note that these improvements may add to the complexity of the protocol.
+
+If nodes could be hacked, one improvement that could be done is that if the figures out that it was hacked, it can report this to the base by going physically to the base and then the base can re-assign keys and distribute the change in keys.
+
+However, if the base is compromised a different strategy has to take place. One possible stategy is that every 30 minutes or hour or some specific time interval, every node reports to the base and all the public and private-keys are re-generated. This way the node has would be forced to re-hack the base if we wants to be succesful again, and hacking the base multiple times should be difficult.
 
 \section{Conclusion}
 
