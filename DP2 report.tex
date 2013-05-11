@@ -22,7 +22,7 @@ around, as well as the possible presence of malicious agents in the field.
 
 \section{Design}
 
-\subsection{Routing tables}
+\subsection{Routing protocol}
 
 An effective and efficient routing protocol is necessary for nodes to determine the best paths to send
 packets to the base without constantly congesting the network.
@@ -37,14 +37,14 @@ have a consistent view of the topology and the same metric, resulting routes at 
 correspond to a valid path.
 \\
 
-\noindent There are two data structures which our routing protocol uses: link-state advertisements and
-routing tables. 
+\noindent There are two data structures which our routing protocol uses: link-state advertisements (LSAs)
+and routing tables. 
 \\
 
 \noindent Link-state advertisements have the following format:
 \\
 
-\noindent Routing tables
+\noindent Routing tables:
 \\
 
 \noindent Initially, the network undergoes the following procedure that discovers the network topology:
@@ -58,19 +58,59 @@ routing tables.
   LSAs must be propogated throughout the entire network.
 \end{enumerate}
 
-\noindent The addition of new nodes to the network is also handled by the above procedure. However, the
-network utilization when adding one new node to the network is much smaller than the utilization of the 
-initial procedure, because only one link-state advertisement created. Forwarding it  
+\subsubsection{Handling changes to network topology}
+
+Every 30 seconds (based on each node's internal clock), all nodes in the network will call \textsc{scan} in
+order to determine whether or not the network topology and success probabilities of paths have changed.
+If there are changes, nodes that are affected will construct LSAs accordingly and send these
+advertisements into the network. Nodes that have not had major changes in status will not need to create
+new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
+significantly over the course of 30 seconds, the network utilization of an update is smaller than the
+network utilization of the initial network setup. Less network congestion implies that this update
+procedure takes less time to complete than the setup.
+\\
+
+\noindent There exist, however, some cases in which the state of the network changes dramatically in 
+between network update intervals, and it is desirable to send LSAs as soon as we recognize a change.
+These situations are as follows:
+
+\begin{enumerate}
+  \item A path between two nodes fails, even though both are still connected to the network via other
+  paths
+  \item A node becomes disconnected from the network
+  \item A node is re-connected or added to the network
+  \item The loss probability of a path changes dramatically, significantly affecting the cost of
+  routes which go through the path
+\end{enumerate}
+
+\noindent In order to determine if one of these situations has occurred, a node will issue a 
+\textsc{scan} whenever it encounters one of a few anomalous scenarios:
+
+\begin{enumerate}
+  \item A node attempts to send a packet down a link, but experiences (TO BE DETERMINED NUMBER) 
+  consecutive timeouts without a successful send.
+  \item A node successfully sends packets down a link (TO BE DETERMINED NUMBER) times without
+  experiencing a single timeout
+  \item A node hears a scan from a node that is not in its view of the network topology
+
+\noindent If one or more neighbor nodes from the last time the node scanned no longer appear in 
+the \textsc{scan} results, either paths between nodes have been lost or at least one node has
+been disconnected from the network. If the \textsc{scan} returns no results, then the node knows
+that it has been disconnected from the network. 
+
+\noindent When a node becomes disconnected from the network or the success probability of a link changes,
+LSAs are sent by all nodes that are affected by the change. Nodes detect these changes by calling
+the \textsc{scan} function and com
 
 \subsection{Cost algorithm}
 
 \subsection{Authentication}
 When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent a malicious adversary). In the protocol presented in this paper, the base will use the RSA public-key cryptosystem to generate private and public-keys that it will then distribute to the first responders. In addition, everyone will have a table with an entry for each fellow first responder containing two important numbers:
 
-\begin{itemize}
-\item[1] The first responder's public-key. 
-\item[2] The first responder's most recent message ID.
-\end{itemize}
+\begin{enumerate}
+  \item The first responder's public-key. 
+  \item The first responder's most recent message ID.
+\end{enumerate}
 
 From here on, I will use the term node and first responders interchangeably.
 
