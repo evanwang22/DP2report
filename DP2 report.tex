@@ -185,11 +185,11 @@ This function returns the corresponding message when applying the inverse functi
 
 \subsubsection{Dealing with replay attacks}
 
-It is also a problem when malicious nodes get a valid signed message and then potentially try to flood the network with unnecessary messages. The way that our protocol deals with this problem is that, all messages are marked with a message ID number that is a counter that is matched to a specific node. Therefore the format of a message looks like this:
+It is also a problem when malicious nodes get a valid signed message and then potentially try to flood the network with unnecessary messages. The way that our protocol deals with this problem is that, all messages are marked with a message ID number that is a counter that is matched to a specific node. This counter is increased everytime before a message is sent suring the signed procedure. Therefore the format of a message looks like this:
 
 $$message = (message\_information, \ message\_ID\_Number)$$
 
-After \textsc{VERIFY} validates that the current message indeed was sent at one point by an allied node, it will then check that the message ID number is not old and thus invalid. The way to check this is by feeding the node number that made VERIFY accept along with the current ID message to the following procedure:\\ \\
+After \textsc{VERIFY} validates that the current message indeed was sent at one point by an allied node, it will then check that the message ID number is not outdated and thus invalid. The way to check this is by feeding the node number that made VERIFY accept along with the current ID message to the following procedure:\\ \\
 $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 \hspace*{10 mm} $lastest\_ID\_number\_from\_table = this.authentication\_table[node\_number].get\_Latest\_Message\_ID();$
 \hspace*{10 mm} $if \ (current\_message.ID > latest\_ID\_number\_from\_table):$\\
@@ -199,16 +199,29 @@ $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 \hspace*{20 mm} $return \ false$\\
 
 
-
-
-
 \subsubsection{Scalability and updating the Authentication table}
 
-In summary, nodes will always apply their private-keys to sign any message they need to send. To verify and get the message, nodes will use the corresponding public-key to get the message and pass the verification.
+After initialization, it is also possible that a new node will be added to the network. 
+Therefore, it is important that other nodes are able to add new these new nodes to their Authentication table.
+
+The way that this issue is addressed is by using the base as a trusted authority.
+The new node is required to report to the base and from their obtain all of the public-keys of the node so far in the network and also obtain his own public and private-key. 
+
+After this the base will send a special message (that he will sign) and distribute the new public-key to the network. 
+Then the nodes will forward the message and re-sign it and then everyone will insert the new public-key of the new node to the network. Note that the base can also sign the new pair of keys for the new node and then the node can distribute them himself with sign message if neccessary.
 
 Jamming is a always a potential problem
 
 \section{Analysis}
+
+\subsection{Authentication}
+Under the assumption that the base and nodes are not going to be overrun, the authentication system presented is extremely secure. The reason that this is the case is because, at the initialization phase, everyone obtained a secure key from the trusted authority (the base). Therefore, if no new first responders join the network, every node in the network so far will be able to verify and sign every message that it receives or sends. This is great for networks where we have a fixed number of nodes in the network. \\
+
+However, we can not ignore the potential scalability problem of this initial design. Therefore, the design presented in this paper also addresses the issue of adding new nodes to the network. If new nodes to the network are added, then they have to report to the base. After this step, they are able to get secure keys from the trusted authority. Since these key are bran new to the network, the rest of the nodes will not accept signatures from this node until the base distributes the new public key. Therefore, the base will forward the new public key to neighbour nodes and if neccesary, the new node can also forward this message signed by the base. Therefore, now the whole network can be updated with the new public key. \\
+
+Since the private-keys are generated with RSA, the probability that a malicious node guesses a key and is able to find a colliding signature is negligible. This statement holds even when the node is able to see valid signatures because its extremely hard to obtain the private-key. This is true if one believes that factoring large numbers is an intractable problem with the present knowledge in computer science. Furthermore, even if a malicious node generates his own private-key, nodes are extremely unlikely to accept any messages that malicious node could sign. The only case where a malicious node could obtain a valid private-key, is if the key that he generated collides with a private-key that was already assigned. The probability of this even is extremely unlikely. The keys used for RSA are usually of length 2048 bits, therefore, the probability that one key generates by a malicious node a collides with an already generated private key is $2^{2048}$. The likelihood of collisions starts being a problem only when the graph start getting exponentially large. This case is extremely unlikely and even if this is the case, the number of bits for keys could just be increased, making RSA again more secure.\\
+
+The authentication mechanism presented is also secure against replay attacks. If a malicious node tries to forward a valid message, first responders will reject the message (or messages), because they will extract the message ID and compare it with the latest message ID they have received. If the message ID is outdated, then first responders will not forward during replay attacks.
 
 \section{Conclusion}
 
