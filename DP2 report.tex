@@ -13,7 +13,7 @@ When deployed to a disaster-stricken area, first responders need to be able to e
 location and other information to their base camp. However, communication infrastructure is often unreliable
 or inaccessible during these crises. To solve this problem, we design an ad-hoc wireless network of portable
 devices that allows responders to send messages to their base camp in a reliable, efficient, and safe way.
-Our rigorous design accounts for the rapid changes in network topology that  occur as the responders move 
+Our rigorous design accounts for the rapid changes in network topology that occur as the responders move 
 around, as well as the possible presence of malicious agents in the field. 
 
 \subsection{Design Overview}
@@ -22,34 +22,104 @@ around, as well as the possible presence of malicious agents in the field.
 
 \section{Design}
 
-\subsection{Routing tables}
+\subsection{Routing protocol}
 
-Initially, and every thirty seconds onwards, the network undergoes the following update procedure that 
-discovers changes in the network topology:
+An effective and efficient routing protocol is necessary for nodes to determine the best paths to send
+packets to the base without constantly congesting the network.
+\\
 
-\begin{itemize}
-  \item Each node issues one scan() message to populate its neighbor table.
-  \item The base sends a route update broadcast() message to its neighbors, notifying them they are one hop
-        away from the base. Each of these nodes updates their routing tables.
-  \item Each of the neighbors from step 2 repeats that step themselves, aggregating the cost metric
-        appropriately. Each node discards every broadcast() it receives after the first. 
-        This procedure continues until all nodes have received a broadcast, and takes time proportional 
-        to the diameter of the network.
-\end{itemize}
+\noindent Our routing protocol is based on a link-state advertisement scheme in which neighboring nodes 
+inform each other of incremental changes. Upon receiving an advertisement, a node will use the 
+\textsc{broadcast} function to forward it to all its neighbors. As a result of this flooding process,
+each node's routing table will contain a complete map of the network. Then, each node will independently
+run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
+have a consistent view of the topology and the same metric, resulting routes at different nodes will
+correspond to a valid path.
+\\
 
-\noindent The addition of new nodes to the network is also handled by this procedure. After this procedure, 
-each node has multiple paths to the base and can begin using the metrics to estimate which paths are best.
+\noindent There are two data structures which our routing protocol uses: link-state advertisements (LSAs)
+and routing tables. 
+\\
 
+\noindent Link-state advertisements have the following format:
+\\
+
+\noindent Routing tables:
+\\
+
+\noindent Initially, the network undergoes the following procedure that discovers the network topology:
+
+\begin{enumerate}
+  \item Each node constructs its link-state advertisement by calling \textsc{scan}. 
+  \item Nodes begin to flood the network with their LSAs, and build up their routing tables based on
+  the advertisements they receive.
+  \item Once all the LSAs have been discarded according to the routing table protocol, each node will have
+  a complete map of the network. This will take time proportional to the diameter of the network, because
+  LSAs must be propagated throughout the entire network.
+\end{enumerate}
+
+\subsubsection{Updating the network topology}
+
+Every 30 seconds (based on each node's internal clock), all nodes in the network will call \textsc{scan} in
+order to determine whether or not the network topology and success probabilities of paths have changed.
+If there are changes, nodes that are affected will construct LSAs accordingly and send these
+advertisements into the network. Nodes that have not had major changes in status will not need to create
+new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
+significantly over the course of 30 seconds, the network utilization of an update is smaller than the
+network utilization of the initial network setup. Less network congestion implies that this update
+procedure takes less time to complete than the setup.
+\\
+
+\noindent There exist, however, some cases in which the state of the network changes dramatically in 
+between network update intervals, and it is desirable to send LSAs as soon as we recognize a change.
+These situations are as follows:
+
+\begin{enumerate}
+  \item A path between two nodes fails, even though both are still connected to the network via other
+  paths
+  \item A path is added to the network without any new nodes joining the network
+  \item A node becomes disconnected from the network
+  \item A node is re-connected or added to the network
+  \item The loss probability of a path changes dramatically, significantly affecting the cost of
+  routes which go through the path
+\end{enumerate}
+
+\noindent In order to determine if one of these situations has occurred, a node will issue a 
+\textsc{scan} whenever it encounters one of a few anomalous scenarios:
+
+\begin{enumerate}
+  \item A node attempts to send a packet down a link, but experiences (TO BE DETERMINED NUMBER) 
+  consecutive timeouts without a successful send.
+  \item A node successfully sends packets down a link (TO BE DETERMINED NUMBER) times without
+  experiencing a single timeout
+  \item A node hears a scan from a node that is not a neighbor in its view of the network topology
+\end{enumerate}
+
+\noindent If one or more neighbor nodes from the last time the node scanned no longer appear in 
+the \textsc{scan} results, either paths between nodes have been lost or at least one node has
+been disconnected from the network. If the \textsc{scan} returns no results, then the node knows
+that it has been disconnected from the network. If the node was not disconnected from the network
+but former neighbors are missing, the node will send an LSA which will propagate throughout the
+entire network. Similarly, if the scan returns the same neighbor nodes as before but one or more
+success probabilities have changed significantly, or if there are new neighbor nodes, the node will
+send an LSA.
+\\
+
+\noindent This protocol will allow the network to update under any of the five situations in which
+the state of the network changes in between network update intervals. One final addition to the
+protocol pertains to disconnected nodes. When a node is disconnected from the network but wishes to
+join it, it will issue a \textsc{scan} every 5 seconds. This will fully connect these nodes to the
+network as soon as a connected node hears a scan. 
 
 \subsection{Cost algorithm}
 
 \subsection{Authentication}
 When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent by a malicious adversary). In the protocol presented in this paper, the base will use the RSA public-key cryptosystem to generate private and public-keys that it will then distribute to the first responders. In addition, everyone will have a table with an entry for each fellow first responder containing two important numbers:
 
-\begin{itemize}
-\item[1] The first responder's public-key. 
-\item[2] The first responder's most recent message ID.
-\end{itemize}
+\begin{enumerate}
+  \item The first responder's public-key. 
+  \item The first responder's most recent message ID.
+\end{enumerate}
 
 From here on, we will use the term node and first responders interchangeably.
 
@@ -113,7 +183,8 @@ $$\textsc{GET\_MESSAGE}(message, corresponding\_public\_key) = m$$
 
 This function returns the corresponding message when applying the inverse function of the sign function using the correct public-key.
 
-\subsubsection{Dealing with replay attacks }
+
+\subsubsection{Dealing with replay attacks}
 
 It is also a problem when malicious nodes get a valid signed message and then potentially try to flood the network with unnecessary messages. The way that our protocol deals with this problem is that, all messages are marked with a message ID number that is a counter that is matched to a specific node. This counter is increased everytime before a message is sent suring the signed procedure. Therefore the format of a message looks like this:
 
@@ -139,6 +210,8 @@ The new node is required to report to the base and from their obtain all of the 
 
 After this the base will send a special message (that he will sign) and distribute the new public-key to the network. 
 Then the nodes will forward the message and re-sign it and then everyone will insert the new public-key of the new node to the network. Note that the base can also sign the new pair of keys for the new node and then the node can distribute them himself with sign message if neccessary.
+
+Jamming is a always a potential problem
 
 \section{Analysis}
 
