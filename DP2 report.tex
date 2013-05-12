@@ -127,7 +127,9 @@ saved value. Otherwise, it discards the LSA, because that same or later LSA must
 before by the node. 
 \\
 
-\noindent Network tables:
+\noindent Network tables: The network table must store LSAs issued from every node in the network. This
+table will enable a node to reconstruct the entire network and run a cost-finding algorithm in order to
+determine the best path a packet should take to reach the base. (TODO: FIGURES)
 \\
 
 \subsubsection{Updating the network topology}
