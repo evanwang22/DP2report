@@ -111,7 +111,46 @@ protocol pertains to disconnected nodes. When a node is disconnected from the ne
 join it, it will issue a \textsc{scan} every 5 seconds. This will fully connect these nodes to the
 network as soon as a connected node hears a scan. 
 
-\subsection{Cost algorithm}
+\subsection{Throughput and Sending Images}
+
+When the situation calls for the aid of first responders, it is important that images taken by these have the highest throughput possible when sending to the base. The algorithm described in this section is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and new public-key packets have higher priority than images, this algorithm will only start sending image packets, when the other priority queue is empty and the images queue is not empty.
+
+\subsection{Throughput Metric and the Routing Table}
+
+After the routing protocol has finished its update period, it will start the integration phase yield an updated graph for the current state of the network topology. The cost in each edge will be $1/p_{i}$, where $p_{i}$ is the probability of success of sending to an adjacent node. The cost of an edge corresponds to the expected number of packets that a node has to send to yield one successful transmission. Once it has the graph it will construct a routing table containing the following information:
+
+\begin{enumerate}
+  \item The best cost path by taking the edge going to adjacent nodes j. 
+  \item The Explicit Congestion Notification Bit (ECNB), which takes value 1 if going to node j takes us to a path that is considered congested or 0 otherwise.
+\end{enumerate}
+
+Where the cost of path is defined by the following equation:
+
+$$  Total \ Expected \ Transmition \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
+
+It's important to realize that we are seeking to minimize this metric.
+
+\begin{table}[ht]
+\caption{Routing Table} % title of Table
+\centering % used for centering table
+\begin{tabular}{c c c } % centered columns (4 columns)
+\hline
+\hline %inserts double horizontal lines
+Node Number & Total Expectet Transmittion Cost [TETC] & Latest Message ID  \\[0.5ex] % inserts table
+%heading
+\hline % inserts single horizontal line
+0 [base] & 69 & 669\\
+1 & 50 & 837\\
+% inserting body of the table
+2 & 47 & 877 \\
+3 & 45 & 300\\ [1ex]
+% [1ex] adds vertical space
+\hline
+%inserts single line
+\end{tabular}
+\label{table:nonlin}
+% is used to refer this table in the text
+\end{table}
 
 \subsection{Authentication}
 When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent by a malicious adversary). In the protocol presented in this paper, the base will use the RSA public-key cryptosystem to generate private and public-keys that it will then distribute to the first responders. In addition, everyone will have a table with an entry for each fellow first responder containing two important numbers:
