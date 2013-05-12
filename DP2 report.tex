@@ -4,7 +4,6 @@
 \usepackage{graphicx}
 \usepackage{clrscode4e}
 
-
 \begin{document}
 
 \section{Introduction}
@@ -130,14 +129,35 @@ saved value. Otherwise, it discards the LSA, because it must have received a mor
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=4in]{"Simple Network".jpg}
-\caption{\textbf{f1.txt} is the current version of the file}
+\includegraphics[width=3in]{"DP2 Simple Network".jpg}
+\caption{A simple, 3 node network}
 \end{figure}
 
+\begin{table}[ht]
+\caption{Network table at all nodes for Figure 1} % title of Table
+\centering % used for centering table
+\begin{tabular}{c c c} % centered columns (3 columns)
+\hline
+\hline %inserts double horizontal lines
+Node ID & Lsaseq & Neighbors  \\[0.5ex] % inserts table
+%heading
+\hline % inserts single horizontal line
+A & 1 & ([B, 0.4], [C, 0.4])\\
+B & 1 & ([A, 0.1], [C, 0.5])\\
+C & 2 & ([A, 0.6], [B, 0.1])\\ [1ex]
+% [1ex] adds vertical space
+\hline
+%inserts single line
+\end{tabular}
+\label{table:nonlin}
+% is used to refer this table in the text
+\end{table}
 
-The network table must store LSAs issued from every node in the network. This
-table will enable a node to reconstruct the entire network and run a cost-finding algorithm in order to
-determine the best path a packet should take to reach the base. (TODO: FIGURES)
+
+\noindent A network table must store LSAs issued from every node in the network, and will be the same
+at every node once the protocol converges. This table enables a node to reconstruct the entire network
+and run a cost-finding algorithm in order to determine the best path a packet should take to reach the
+base.
 \\
 
 \subsubsection{Updating the network topology}
@@ -206,25 +226,36 @@ network as soon as a connected node hears a scan.
 
 \subsection{Throughput for Sending Images}
 
-When the situation calls for the aid of first responders, it is important that images taken by these have the highest throughput possible when sending to the base. The algorithm described in this section is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and new public-key packets have higher priority than images, this algorithm will only start sending image packets, when the other priority queue is empty and the images queue is not empty. Note that one packet cannot hold a full image, so images will be tried to be decided in different packets such that as much information can be fit into one packet while still leaving some small portion for appending information to that packet.
+When the situation calls for the aid of first responders, it is important that images taken by these
+have the highest throughput possible when sending to the base. The algorithm described in this section
+is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and
+new public-key packets have higher priority than images, this algorithm will only start sending image
+packets, when the other priority queue is empty and the images queue is not empty. Note that one packet
+cannot hold a full image, so images will be tried to be decided in different packets such that as much
+information can be fit into one packet while still leaving some small portion for appending information
+to that packet.
 
-\subsection{Throughput Metric and the Routing Table}
+\subsubsection{Throughput Metric and the Routing Table}
 
-After the routing protocol has finished its update period, it will start the integration phase yield an updated graph for the current state of the network topology. The cost in each edge will be $1/p_{i}$, where $p_{i} = 1 - p_{loss}$ is the probability of success of sending to an adjacent node. The cost of an edge corresponds to the expected number of packets that a node has to send to yield one successful transmission. Once it has the graph it will construct a routing table containing the following information:
+After the routing protocol has finished its update period, it will start the integration phase yield an
+updated graph for the current state of the network topology. The cost in each edge will be $1/p_{i}$, 
+where $p_{i} = 1 - p_{loss}$ is the probability of success of sending to an adjacent node. The cost of an
+edge corresponds to the expected number of packets that a node has to send to yield one successful
+transmission. Once it has the graph it will construct a routing table containing the following information:
 
 \begin{enumerate}
   \item The best cost path by taking the link going to adjacent node j. These costs will be considered during times of congestion.
   \item The Explicit Congestion Notification Bit (ECNB), which takes value 1 if going to node j takes us to a path that is considered congested or 0 otherwise.
 \end{enumerate}
 
-The cost of path is defined by the following equation:
+\noindent The cost of path is defined by the following equation:
 
-$$  Total \ Expected \ Transmition \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
+$$  Total \ Expected \ Transmission \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
 
-It's important to realize that we are seeking to minimize this metric.
+\noindent The system seeks to minimize this metric.
 \\
 
-To fill out the table we do the following:
+\noindent To fill out the table we do the following:
 
 \begin{enumerate}
   \item Do Dijkstra's single shortest path from the current node.  
@@ -233,7 +264,7 @@ To fill out the table we do the following:
   \item Then, insert for node i the value $d_{i}$ plus the cost of taking the link connecting the current node to the adjacent node. (Note that if current node number = i, then it just insert the minimum cost path from itself).
 \end{enumerate}
 
-Consider the following table as an example:
+\noindent Consider the following table as an example:
 
 \begin{table}[ht]
 \caption{Routing Table} % title of Table
@@ -241,14 +272,14 @@ Consider the following table as an example:
 \begin{tabular}{c c c} % centered columns (3 columns)
 \hline
 \hline %inserts double horizontal lines
-Node Number & Total Expectet Transmittion Cost [TETC] & Explicit Congention Notification Bit [ECNB]  \\[0.5ex] % inserts table
+Node ID & Total Expectet Transmittion Cost [TETC] & Explicit Congention Notification Bit [ECNB]  \\[0.5ex] % inserts table
 %heading
 \hline % inserts single horizontal line
-0 [base] & 19 & 0\\
-1 & 29 & 1\\
+B [base] & 19 & 0\\
+A & 29 & 1\\
 % inserting body of the table
-2 & 31 & 0 \\
-3 & 17 & 1\\ [1ex]
+C & 31 & 0 \\
+D & 17 & 1\\ [1ex]
 % [1ex] adds vertical space
 \hline
 %inserts single line
@@ -257,7 +288,7 @@ Node Number & Total Expectet Transmittion Cost [TETC] & Explicit Congention Noti
 % is used to refer this table in the text
 \end{table}
 
-\subsection{Throughput algorithm}
+\subsubsection{Throughput algorithm}
 
 When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge
 of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around 
@@ -265,10 +296,10 @@ congestion, while still trying to attaining the maximum throughput with the curr
 Note that it will use the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes, to be aware of 
 its own congestion.\\ 
 
-The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
+\noindent The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
 it through that path, else try to re-route by excluding the congested node in the path.\\
  
-Recall that we only send images when the priority Queue for advertisments and public-keys is empty. Recall at the initialization phase, the contention window is of size 100 packets. Then the routing algorithm is implemented as follows by each node:
+\noindent Recall that we only send images when the priority Queue for advertisments and public-keys is empty. Recall at the initialization phase, the contention window is of size 100 packets. Then the routing algorithm is implemented as follows by each node:
 
 \begin{enumerate}
 
@@ -280,9 +311,11 @@ Recall that we only send images when the priority Queue for advertisments and pu
   \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
 \end{enumerate}
 
-\subsection{Explicit Congestion Notification Bit}
+\subsubsection{Explicit Congestion Notification Bit}
 
-An important but challening aspect of dealing with congestion is deciding when to consider a node is congested or not. Consider the figure 1: 
+An important but challening aspect of dealing with congestion is deciding when to consider a node is congested or not. 
+Consider the figure 2 below.
+\\
  
 \begin{figure}[ht!]
 \centering
@@ -290,24 +323,32 @@ An important but challening aspect of dealing with congestion is deciding when t
 \caption{\textbf{f1.txt} is the current version of the file}
 \end{figure}
 
-When a node has a queue length greather than k, then it will advertise that it is congested by sending a ECNB packet to all its neighbors. k is initialized for every node as 100. The way that k is changed depends on the number of neighbors around the current node and whether a packet was dropped or not. If a packet is dropped, it must not be informing quickly enough to its surrounding nodes about this, therefore decrease to half between wherever k is and 50:
+\noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending
+a ECNB packet to all its neighbors. k is initialized for every node as 100. The way that k is changed depends 
+on the number of neighbors around the current node and whether a packet was dropped or not. If a packet is
+dropped, it must not be informing quickly enough to its surrounding nodes about this, therefore decrease to half 
+between wherever k is and 50:
 
 $$ k = max\{50, \frac{k + 50}{2} \}$$
 
-Every two scans we will adjust the value k. The first link to the path were you are rounting packets roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, we will determine how much you change your queue:
+\noindent Every two scans we will adjust the value k. The first link to the path were you are rounting packets
+roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, 
+we will determine how much you change your queue.
+\\
 
-if the percentage change is positive then it means we expect to send less packets, so the rate of packets leaving the queue is expected to decrease, so decrease the value of k:
+\noindent If the percentage change is positive then it means we expect to send less packets, so the rate of packets
+leaving the queue is expected to decrease, so decrease the value of k:
 
 $$ k = max\{50, k -  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 50|   \}$$ 
 
-if the percentage change is negative then we expect to see the rate of emptying the queue increase, therefore k is increased:
+\noindent If the percentage change is negative then we expect to see the rate of emptying the queue increase, therefore k is increased:
 
 $$ k = min\{120, k +  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 120|   \}$$ 
 
 \subsection{Authentication}
 When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent by a malicious adversary). In the protocol presented in this paper, we use the RSA public-key cryptosystem to generate private and public-keys that will be used to authenticate messages. From here on, we use the term node and first responders interchangeably.
 
-\subsection{Initialization}
+\subsubsection{Initialization}
 During initialization, each node is assigned a public/private key pair by the base. Each node constructs a table with the following information for every node, and distributes it across all the nodes:
 
 \begin{enumerate}
@@ -315,7 +356,7 @@ During initialization, each node is assigned a public/private key pair by the ba
   \item The node's most recent message ID, initially 0.
 \end{enumerate}
 
-\subsubsection{The Table for Authentication}
+\subsubsection{Authentification Table}
 Recall that everyone will have a table with an entry for each ally node. The table will contain two important numbers for each node: the node's public-key and the node's latest message ID number. The latest message ID number is a counter-like number inserted to every message a node sends such that each node can idenfity duplicate messages and be protected from malicious nodes trying to plot replay attacks. Consider Table 1 for a depiction of this table:
 
 \begin{table}[ht]
@@ -340,7 +381,7 @@ First Responder ID & Public-Key & Latest Message ID  \\[0.5ex] % inserts table
 % is used to refer this table in the text
 \end{table}
 
-\subsubsection{Signing Mechanism}
+\subsubsection{Signatures}
 
 Nodes should accept messages only from fellow first responders. 
 To achieve this security, nodes sign their messages with their private-key. 
@@ -348,24 +389,26 @@ Consider the following function that signs messages:
 
 $$\textsc{SIGN}(message, my\_private\_key, new\_message\_ID) = \sigma_{A}$$
 
-The function returns a binary string $\sigma_{A}$, corresponding to the output of signing a message with the node's secret key. Since each private key assigned for each node is unique, each other node will need the corresponding public key to verify the signature. Since we also want to be protected from replay attacks, the message ID is incremented for each sent message.
+\noindent The function returns a binary string $\sigma_{A}$, corresponding to the output of signing a message with the node's secret key. Since each private key assigned for each node is unique, each other node will need the corresponding public key to verify the signature. Since we also want to be protected from replay attacks, the message ID is incremented for each sent message.
 
-\subsection{Authentication Mechanism}
+\subsubsection{Authentication Mechanism}
 Nodes can verify the validity of a message by using the following verification function:
 
 $$\textsc{VERIFY}(signature, cooresponding\_public\_key) =  b $$
 
-The output of $\textsc{VERIFY}$ will be the boolean true if the verification passes with that public-key or false if it fails. If the verification fails, then the message will be dropped and will not be forwarded. 
+\noindent The output of $\textsc{VERIFY}$ will be a boolean, true, if the verification passes with that public-key or false if it fails. 
+If the verification fails, then the message will be dropped and will not be forwarded.
 \\
-The receiving node uses the Authentication Table to decide which public key to use in order to authenticate a message. When forwarding messages, nodes re-sign the contents of the message with their own private key.
+\noindent The receiving node uses the Authentication Table to decide which public key to use in order to authenticate a message.
+When forwarding messages, nodes re-sign the contents of the message with their own private key.
 \\
 
-Once the authentication has passed, then the node will use the following function to get the message:
+\noindent Once the authentication has passed, then the node will use the following function to get the message:
 
 $$\textsc{GET\_MESSAGE}(message, corresponding\_public\_key) = m$$
 \\
 
-This function returns the corresponding message when applying the inverse of the sign function using the appropriate public-key.
+\noindent This function returns the corresponding message when applying the inverse of the sign function using the appropriate public-key.
 
 \subsubsection{Dealing with replay attacks}
 
@@ -373,8 +416,9 @@ Another problem arises when a malicious node overhears a properly signed message
 
 $$message = (message\_information, \ message\_ID)$$
 
-After \textsc{VERIFY} validates that the current message indeed was sent at one point by a trusted node, it will then check that the message ID number
-is not outdated. This is accomplished by the following procedure (given the node number and message ID):
+\noindent After \textsc{VERIFY} validates that the current message indeed was sent at one point by a trusted node, 
+it will then check that the message ID number is not outdated. This is accomplished by the following procedure 
+(given the node number and message ID):
 \\
 
 $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
@@ -390,11 +434,13 @@ $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 
 It is possible that a new node will be added to the network after the deployment. 
 Therefore, it is important that other nodes are able to add new these new nodes to their Authentication Table.
+\\
 
-We address this by using the base as a trusted authority.
-The new node is required to report to the base to obtain its own public and private key, as well as all of the public keys of the nodes already in the network.
+\noindent We address this by using the base as a trusted authority. The new node is required to report to the base
+to obtain its own public and private key, as well as all of the public keys of the nodes already in the network.
+\\
 
-After this step, the base sends a special message (that it signs) and distributes the new public-key across the network. 
+\noindent After this step, the base sends a special message (that it signs) and distributes the new public-key across the network. 
 Then, the nodes forward the message, re-signing it each time, until every node has inserted the new public key of the new node into their table.
 
 \section{Analysis}
@@ -427,12 +473,12 @@ based protocols, simplifies our cost metric and fulfills a system requirement.
 \subsection{Authentication}
 Under the assumption that the base and legitimate nodes are all trusted, the authentication system presented is extremely secure. This is because during the initialization phase, everyone obtained a secure key from the trusted authority (the base). Therefore, if no new first responders join the network, every node in the network so far will be able to verify and sign every message that it receives or sends. \\
 
-However, we can not ignore the potential scalability problem of this initial design. Therefore, our design also accounts for adding new nodes to the network. As explained above, these new nodes undergo a similar procedure for obtaining keys from the trusted base. The rest of the nodes will not accept messages from this node until the base distributes the new node's public key. The old nodes will trust this new key, as the message containing it was signed by a trusted key.
+\noindent However, we can not ignore the potential scalability problem of this initial design. Therefore, our design also accounts for adding new nodes to the network. As explained above, these new nodes undergo a similar procedure for obtaining keys from the trusted base. The rest of the nodes will not accept messages from this node until the base distributes the new node's public key. The old nodes will trust this new key, as the message containing it was signed by a trusted key.
 \\
 
-Since the private keys are generated with RSA, the probability that a malicious node guesses a key and is able to find a colliding signature is negligible (given the intractability of factoring large numbers). The keys used for RSA are usually of length 2048 bits, so the probability that a key generated by a malicious node a collides with an already generated private key is $2^{-2048}$. This case is extremely unlikely, but in a huge network where this could be a problem, the number of bits used for key generation could be increased.\\
+\noindent Since the private keys are generated with RSA, the probability that a malicious node guesses a key and is able to find a colliding signature is negligible (given the intractability of factoring large numbers). The keys used for RSA are usually of length 2048 bits, so the probability that a key generated by a malicious node a collides with an already generated private key is $2^{-2048}$. This case is extremely unlikely, but in a huge network where this could be a problem, the number of bits used for key generation could be increased.\\
 
-The authentication mechanism presented is also secure against replay attacks. Since the message ID is included in the message signature, it is not enough for a malicious node to simply guess an incremented message ID, as it would have to resign the message accounting for the new key. This is unfeasable, given that the malicious node can not guess the nodes' private keys.
+\noindent The authentication mechanism presented is also secure against replay attacks. Since the message ID is included in the message signature, it is not enough for a malicious node to simply guess an incremented message ID, as it would have to resign the message accounting for the new key. This is unfeasable, given that the malicious node can not guess the nodes' private keys.
 
 \subsection{Use cases}
 
@@ -460,11 +506,19 @@ other nodes from sending their messages due to 802.11 MAC.
 
 \subsubsection{Replay attacks}
 
-Our system is robust against replay attacks, as described in the "Authentication" section. Using the Authentication Table, nodes can quickly determine that a message is a replay of a previously heard message using the message IDs. However, a replay attack will still use network bandwidth and cause more losses of legitimate packets, which is something we cannot prevent.
+Our system is robust against replay attacks, as described in the ``Authentication" section. Using the Authentication Table, 
+nodes can quickly determine that a message is a replay of a previously heard message using the message IDs. However, 
+a replay attack will still use network bandwidth and cause more losses of legitimate packets, which is something we cannot prevent.
 
 \subsubsection{Hop bypassing}
 
-If a node $k$ overhears a message that is intended for node $j$, it will drop the message, even if $k$ is closer to the base than $j$. Even though ignoring the message header in this case would increase throughput, in general, ignoring send() headers will quickly cause the protocol to break down. The routing system works on the assumption that the route calculated for a packet is the route the packet acually takes. Without this representation invariant, a node might incorrectly think a route no longer exists, and LSAs may be sent mistakenly, all of which decreases throughput in the long run. Thus, we sacrifice a small increase in throughput for an edge case in favor of simplicity of the protocol and long-term consistency of the update() and send() procedures. We also note that this would never occur for location information, as GPS coordinates are transmitted through an LSA broadcast instead of send(). 
+If a node $k$ overhears a message that is intended for node $j$, it will drop the message, even if $k$ is closer to the base than $j$.
+Even though ignoring the message header in this case would increase throughput, in general, ignoring \textsc{send} headers will quickly cause
+the protocol to break down. The routing system works on the assumption that the route calculated for a packet is the route the packet
+actually takes. Without this representation invariant, a node might incorrectly think a route no longer exists, and LSAs may be sent 
+mistakenly, all of which decreases throughput in the long run. Thus, we sacrifice a small increase in throughput for an edge case in
+favor of simplicity of the protocol and long-term consistency of the \textsc{update} and \textsc{send} procedures. We also note that 
+this would never occur for location information, as GPS coordinates are transmitted through an LSA broadcast instead of \textsc{send}. 
 
 \section{Conclusion}
 
