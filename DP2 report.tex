@@ -18,12 +18,14 @@ around, as well as the possible presence of malicious agents in the field.
 \subsection{Design Overview}
 
 Our design is built on top of 802.11 MAC and uses TCP in order return ACKs when a node successfully receives
-a packet from another node.
+a packet from another node, or detect a dropped packet via timeout.
 \\
 
 \noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
-802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle. ...MORE 802.11
-IS GOOD STUFF HERE...(TODO)
+802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle, and additionally handles
+backoffs and time slot assignments between nodes sharing the medium. Our design also specifies a timeout time, 
+10 milliseconds, in order to determine when a packet has been dropped and must be resent. 10 ms is approximately 
+twice the average RTT of a ping to http://mit.edu from a laptop on MIT wireless internet.
 \\
 
 \noindent Our link-state based routing protocol enables each first responder to send messages to the base anytime
@@ -96,6 +98,8 @@ each node's routing table will contain a complete map of the network. Then, each
 run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
 have a consistent view of the topology and the same metric, resulting routes at different nodes will
 correspond to a valid path.
+\\
+
 
 \subsubsection{Location information}
 
@@ -167,8 +171,9 @@ base.
 \begin{enumerate}
   \item Each node constructs its link-state advertisement by calling \textsc{scan}. 
   \item Nodes begin to flood the network with their LSAs, and build up their routing tables based on
-  the advertisements they receive.
-  \item Once all the LSAs have been discarded according to the routing table protocol, each node will have
+  the advertisements they receive. An LSA will be resent until all neighbor nodes reply with an ACK
+  that they have received the message to ensure all nodes receive all LSAs.
+  \item Once all the LSAs have been discarded according to the network table protocol, each node will have
   a complete map of the network. This will take time proportional to the diameter of the network, because
   LSAs must be propagated throughout the entire network.
 \end{enumerate}
@@ -521,6 +526,10 @@ favor of simplicity of the protocol and long-term consistency of the \textsc{upd
 this would never occur for location information, as GPS coordinates are transmitted through an LSA broadcast instead of \textsc{send}. 
 
 \section{Conclusion}
+
+AdHocPro is a stable and complete solution for ad-hoc networks when it is bundled with 802.11. Our systems allows first responders to
+focus on their mission without worrying about their ability to communicate with their base camp. By thwarting potentially malicious
+users and effectively delivering location and images across the network, AdHocPro uses novel methods to provide a seamless user experience.
 
 \section{References}
 
