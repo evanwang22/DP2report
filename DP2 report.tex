@@ -17,8 +17,8 @@ around, as well as the possible presence of malicious agents in the field.
 
 \subsection{Design Overview}
 
-Our design is built on top of 802.11 MAC and uses TCP in order return ACKs when a node successfully receives
-a packet from another node, or detect a dropped packet via timeout.
+Our design is built on top of 802.11 MAC and uses a similar idea as TCP in order return ACKs when a node successfully receives
+a packet from another node, or detect a dropped packet via timeout. However, TCP does it from source to destination, and in this protocol the next node is the destination, there are ack each time.
 \\
 
 \noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
@@ -248,7 +248,6 @@ where $p_{i} = 1 - p_{loss}$ is the probability of success of sending to an adja
 edge corresponds to the expected number of packets that a node has to send to yield one successful
 transmission. Once it has the graph it will construct a routing table containing the following information:
 
-
 \begin{enumerate}
   \item The best cost path by taking the link going to adjacent node j. These costs will be considered during times of congestion.
   \item The Explicit Congestion Notification Bit (ECNB), which takes value 1 if going to node j takes us to a path that is considered congested or 0 otherwise.
@@ -296,10 +295,17 @@ D & 17 & 1\\ [1ex]
 
 \subsubsection{Throughput Algorithm}
 
-When sending images to the base, our goal is to maximize throughput based on our current knowledge of the network state. Therefore, in times of heavy congestion, the goal of our algorithm is to route around congested areas.
-Each node uses the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes to gain knowledge of its own level of congestion.\\ 
 
-Recall that we only send images when the priority queue for advertisments and public keys is empty. At the initialization phase, the contention window size is 100 packets and never reaches values below 10 or above 200 packets. The routing algorithm is implemented by each node as follows:
+When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge
+of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around 
+congestion, while still trying to attaining the maximum throughput with the current state of the network. 
+Note that it will use the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes.\\ 
+
+\noindent The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
+it through that path, else try to re-route by excluding the congested node in the path.\\
+ 
+
+At the initialization phase, the contention window is of size 100 packets and never reaches values bellow 10 nor above 200 packets. Then the routing algorithm is implemented as follows by each node:
 
 \begin{enumerate}
 
@@ -323,16 +329,16 @@ Consider the figure 2 below.
 \caption{\textbf{The Queue for images}}
 \end{figure}
 
-\noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending
-a ECNB packet to all its neighbors. k is initialized for every node as 100. k changes based on the number of neighbors around the current node, as well as whether a packet was dropped or not. If a packet was
-dropped, it must not be informing quickly enough to its surrounding nodes about this, therefore decrease to half 
-between wherever k is and 50:
+\noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending an ECNB packet to all its neighbors. k is initialized for every node as 100. One way that k is changed depends 
+whether a packet was dropped or not. If a packet is
+dropped, it must inform its getting congested, therefore decrease k 
+in between its own value and 50:
+
 
 $$ k = max\{50, \frac{k + 50}{2} \}$$
 
 \noindent Every two scans we will adjust the value k. The first link to the path were you are rounting packets
-roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, 
-the algorithm determines how much to change the queue
+roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, we will determine how much to change the thershold.
 \\
 
 \noindent If the percentage change is positive, then it means we expect to send less packets, so the rate of packets
@@ -345,10 +351,10 @@ $$ k = max\{50, k -  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{
 $$ k = min\{120, k +  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 120|   \}$$ 
 
 \subsection{Authentication}
-When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent by a malicious adversary). In the protocol presented in this paper, we use the RSA public-key cryptosystem to generate private and public-keys that will be used to authenticate messages. From here on, we use the term node and first responders interchangeably.
+When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. In the protocol presented in this paper, we use the RSA public-key cryptosystem to generate private and public-keys that will be used to authenticate messages.
 
 \subsubsection{Initialization}
-During initialization, each node is assigned a public/private key pair by the base. Each node constructs a table with the following information for every node, and distributes it across all the nodes:
+During initialization, each node is assigned a public/private key pair by the base. Each node constructs a table with the following information for every node and the base distributes it:
 
 \begin{enumerate}
   \item The node's public-key. 
@@ -430,7 +436,6 @@ $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 
 
 \subsubsection{Scalability and Updating the Authentication Table}
-
 
 It is possible that a new node will be added to the network after the deployment. 
 Therefore, other nodes must be able to add new nodes to their Authentication Tables.
@@ -547,9 +552,4 @@ users and effectively delivering location and images across the network, AdHocPr
 
 \section{References}
 
-[1] Sergio Benitez, May 2013. Personal communication
-
-\noindent[2] Cormen, Leiserson, Rivest, Stein, Introduction to Algorithms 3rd Edition. Cambridge, Massachussets: MIT Press
-
-\noindent[3] Hari Balakrishnan, Chris Terman, 6.02 Course notes, Cambridge, Massachussets: MIT Press, September 2012
 \end{document}
