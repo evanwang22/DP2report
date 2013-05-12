@@ -411,6 +411,29 @@ Since the private keys are generated with RSA, the probability that a malicious 
 
 The authentication mechanism presented is also secure against replay attacks. Since the message ID is included in the message signature, it is not enough for a malicious node to simply guess an incremented message ID, as it would have to resign the message accounting for the new key. This is unfeasable, given that the malicious node can not guess the nodes' private keys.
 
+\subsection{Use cases}
+
+\subsubsection{Use more resources than necessary}
+
+There are two scenarios in which the system uses more resources than necessary. First, a packet may follow an optimal path
+to the base for a number of hops, only to find that a link on its path has died. The node will broadcast an advertisement
+and the packet will then be rerouted after it has already followed a path for a number of hops, which uses more additional
+resources. Another scenario arises from 
+
+\subsubsection{Fail to inform the base within 5 minutes}
+
+\subsubsection{Malicious node preventing a message}
+
+\subsubsection{Behavior under different loads}
+
+\subsubsection{Replay attack}
+
+\subsubsection{Hop bypassing}
+
+\subsubsection{Base hears unintended message}
+
+\subsubsection{}
+
 \section{Conclusion}
 
 \section{References}
