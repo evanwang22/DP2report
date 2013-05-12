@@ -12,7 +12,7 @@ When deployed to a disaster-stricken area, first responders need to be able to e
 location and other information to their base camp. However, communication infrastructure is often unreliable
 or inaccessible during these crises. To solve this problem, we designed AdHocPro, an ad-hoc wireless network of
 portable devices that allows responders to send messages to their base camp in a reliable, efficient, and safe
-way. Our rigorous design accounts for the rapid changes in network topology that occur as the responders move 
+way. Our design accounts for the changes in network topology that occur as the responders move 
 around, as well as the possible presence of malicious agents in the field. 
 
 \subsection{Design Overview}
@@ -21,9 +21,7 @@ Our design is built on top of 802.11 MAC and uses TCP in order return ACKs when 
 a packet from another node, or detect a dropped packet via timeout.
 \\
 
-\noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
-
-802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle, and additionally handles
+\noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time, 802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle, and additionally handles
 backoffs and time slot assignments between nodes sharing the medium. Our design also specifies a timeout time, 
 10 milliseconds, in order to determine when a packet has been dropped and must be resent. 10 ms is approximately 
 twice the average RTT of a ping to http://mit.edu from a laptop on MIT wireless internet.
@@ -74,11 +72,11 @@ distance vector, a node only knows of the best path to take to a destination. Th
 packet will stall until the next advertisement window.
 \\
 
-\noindent The algorithm for sending images used in this paper tries to re-route around congested nodes by calculating the next best path. It know about congestion through ECN packets from the node. The trade-off made here is in terms of computation time. To compute these type of alternative paths it costs additional computation time and keeping track of congested nodes. However, the potential benefits are parallization in image sending, which decreases the amount of dropped packets and increases throughput.
+\noindent The algorithm for sending images used in this paper tries to re-route around congested nodes by calculating the next best path. Nodes learn about congestion through ECN packets from the node. The trade-off made here is in terms of computation time. To compute alternative paths costs additional computation time and also does keeping track of congested nodes. However, the potential benefits are parallization in image sending, which decreases the amount of dropped packets and increases throughput.
 \\
 
 \noindent The authentification system was designed with an emphasis on security and simplicity.
-Each node signs its own messages with its private key, and the resulting ciphertext can be decrypted by any
+Each node signs its own messages with its private key, and the resulting signature can be verified by any
 node that has the public key. Therefore, only trusted nodes will be able to compose and forward messages, but
 nodes may still use the \textsc{broadcast} function as all of its neighbors, including non-trusted nodes, are
 capable of deciphering its messages. Preventing non-trusted nodes from viewing messages is not a system 
@@ -233,13 +231,12 @@ network as soon as a connected node hears a scan.
 \subsection{Throughput for Sending Images}
 
 When the situation calls for the aid of first responders, it is important that images taken by these
-have the highest throughput possible when sending to the base. The algorithm described in this section
+have the highest throughput to the base. The algorithm described in this section
 is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and
 new public-key packets have higher priority than images, this algorithm will only start sending image
 packets, when the other priority queue is empty and the images queue is not empty. Note that one packet
-cannot hold a full image, so images will be tried to be decided in different packets such that as much
-information can be fit into one packet while still leaving some small portion for appending information
-to that packet.
+cannot hold a full image, so images will be divided in different packets such that as much
+information can be fit into one packet while still leaving some small portion for appending information.
 
 \subsubsection{Throughput Metric and the Routing Table}
 
