@@ -126,7 +126,16 @@ greater than the saved value for $n$, then the node re-broadcasts the LSA to its
 saved value. Otherwise, it discards the LSA, because it must have received a more recent LSA from that node.
 \\
 
-\noindent Network tables: The network table must store LSAs issued from every node in the network. This
+\noindent Network tables: 
+
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=4in]{"Simple Network".jpg}
+\caption{\textbf{f1.txt} is the current version of the file}
+\end{figure}
+
+
+The network table must store LSAs issued from every node in the network. This
 table will enable a node to reconstruct the entire network and run a cost-finding algorithm in order to
 determine the best path a packet should take to reach the base. (TODO: FIGURES)
 \\
@@ -422,10 +431,11 @@ resources. Secondly, after a link fails to send a packet a number of consecutive
 \textsc{scan}. However, it is possible the probability of the link has not changed and the sending node was unsuccessful.
 The \textsc{scan} in this scenario uses more resources than necessary to deliver a packet.
 
-\subsubsection{Fail to inform the base within 5 minutes}
+\subsubsection{Failure to inform the base within 5 minutes}
 
-
-
+AdHocPro may fail to inform the base of a node $n$'s location within 5 minutes only if all nodes which have received an
+advertisement from $n$ become disconnected from the network before the advertisement reaches the base. The broadcast
+nature of LSAs makes failure to inform the base of every connected node's location highly unlikely.
 
 \subsubsection{Malicious node preventing a message}
 
