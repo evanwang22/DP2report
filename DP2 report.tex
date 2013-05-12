@@ -23,8 +23,7 @@ a packet from another node.
 \\
 
 \noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
-802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle. ...MORE 802.11
-IS GOOD STUFF HERE...(TODO)
+802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle.
 \\
 
 \noindent Our link-state based routing protocol enables each first responder to send messages to the base anytime
@@ -72,7 +71,7 @@ distance vector, a node only knows of the best path to take to a destination. Th
 packet will stall until the next advertisement window.
 \\
 
-\noindent COST METRIC TRADEOFFS (TODO)
+\noindent The algorithm for sending images used in this paper tries to re-route around congested nodes by calculating the next best path. It know about congestion through ECN packets from the node. The trade-off made here is in terms of computation time. To compute these type of alternative paths it costs additional computation time and keeping track of congested nodes. However, the potential benefits are parallization in image sending, which decreases the amount of dropped packets and increases throughput.
 \\
 
 \noindent The authentification system was designed with an emphasis on security and simplicity.
@@ -197,7 +196,7 @@ network as soon as a connected node hears a scan.
 
 \subsection{Throughput for Sending Images}
 
-When the situation calls for the aid of first responders, it is important that images taken by these have the highest throughput possible when sending to the base. The algorithm described in this section is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and new public-key packets have higher priority than images, this algorithm will only start sending image packets, when the other priority queue is empty and the images queue is not empty. Note that one packet cannot hold a full image, so images will be tried to be decided in different packets such that as much information can be fit into one packet while still leaving some small portion for appending information to that packet.
+When the situation calls for the aid of first responders, it is important that images taken by these have the highest throughput possible when sending to the base. The algorithm described in this section is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and new public-key packets have higher priority than images, this algorithm will only start sending image packets, when the other priority queue is empty and the images queue is not empty. Note that one packet cannot hold a full image, so images will be divided into different packets such that as much information can be fit into one packet while still leaving some small portion for appending information to that packet.
 
 \subsection{Throughput Metric and the Routing Table}
 
@@ -259,14 +258,14 @@ its own congestion.\\
 The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
 it through that path, else try to re-route by excluding the congested node in the path.\\
  
-Recall that we only send images when the priority Queue for advertisments and public-keys is empty. Recall at the initialization phase, the contention window is of size 100 packets. Then the routing algorithm is implemented as follows by each node:
+Recall that we only send images when the priority Queue for advertisments and public-keys is empty. Recall at the initialization phase, the contention window is of size 100 packets and never reaches values bellow 10 nor above 200 packets. Then the routing algorithm is implemented as follows by each node:
 
 \begin{enumerate}
 
   \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the current packet is not marked its being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state changes to 1 of any neighbor, go to step 3 and change the appropriate ECN bit to 1.
   \item If the current node gets any packet notification from our neighbors saying that they are are congested, then we update the ECNB to 1.
   \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid and now try re-routing by considering the next best link. When considering a best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
-  \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes whenever Dijkstra's shortest path is computed.
+  \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes and its edges whenever Dijkstra's shortest path is computed. If the current node is marked to avoid nodes A-B-...-X, but the current node has in its routing table that the congestion changed the ECNB to 0, then ignore the marking and go to step 1.
   \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECN of 1, then route using to the best path with a contention window to half the size and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
   \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
 \end{enumerate}
@@ -278,7 +277,7 @@ An important but challening aspect of dealing with congestion is deciding when t
 \begin{figure}[ht!]
 \centering
 \includegraphics[width=3in, height=2.2in]{Queue4.jpg}
-\caption{\textbf{f1.txt} is the current version of the file}
+\caption{\textbf{The Queue for images}}
 \end{figure}
 
 When a node has a queue length greather than k, then it will advertise that it is congested by sending a ECNB packet to all its neighbors. k is initialized for every node as 100. The way that k is changed depends on the number of neighbors around the current node and whether a packet was dropped or not. If a packet is dropped, it must not be informing quickly enough to its surrounding nodes about this, therefore decrease to half between wherever k is and 50:
@@ -390,6 +389,9 @@ Then, the nodes forward the message, re-signing it each time, until every node h
 
 \section{Analysis}
 
+\subsection{802.11}
+The reason 802.11 is a good design decision is because it is a tested protocol that has evidence of being successful. Furthemore, it adds to the simplicity of the deisgn by re-using good protocols. It eliminates the hidden node problem because it always senses before sending. However, even though it is not optimal for the exposed node problem, we are designing under the design principle of optimizing for the most common case. Therefore this trade-off is not very significant because that case does not happen that often and the other benifits already mentioned.
+
 \subsection{Routing protocol}
 
 As mentioned previously, our link-state scheme has both advantages and disadvantages compared to alternative protocols
@@ -425,6 +427,11 @@ Since the private keys are generated with RSA, the probability that a malicious 
 
 The authentication mechanism presented is also secure against replay attacks. Since the message ID is included in the message signature, it is not enough for a malicious node to simply guess an incremented message ID, as it would have to resign the message accounting for the new key. This is unfeasable, given that the malicious node can not guess the nodes' private keys.
 
+\subsubsection{Throughput for sending images}
+
+The idea for the throughput algorithm is very simple, as long as you can push more packets through your best route, keep doing that (to achieve highest throughput). However, when congestion becomes a problem, inform you neighbors, and then your neighbors will mark packets that should be re-routed. When node get re-routing packets, they will again run Dijkstra, but instead not consider any paths that the algorithm considers congested. Another quintessential point to note about the algorithm is that it does not re-route packets to nodes were there would be interference. The reason for this is that, nodes that are close to each other interfere with each other if they send packets at the same time. Therefore, if one wants to achieve good throughput and real parallelism when sending packets, its better to consider re-routing paths such that the amount of intereference with congested sections of the network are minimized. Therefore, this algorithm attempts to maximize actual realizable throughput by re-routing to paths with high throughput ,low congestion and low interference.
+
+
 \subsection{Use cases}
 
 \subsubsection{Use more resources than necessary}
@@ -447,6 +454,22 @@ A malicious node may always prevent a message from reaching the base by jamming 
 other nodes from sending their messages due to 802.11 MAC.
 
 \subsubsection{Behavior under different loads}
+
+\subsubsection{Light traffic}
+
+The current algorithm choses alternative routes when congestion is high. Therefore, under the assumption that all wirless links interfere and only one link can send at a time and that queues are low (or mostly emmoty), the actual throughput is inversely proportional to the suggested metric:
+
+$$  Total \ Expected \ Transmition \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
+
+Therefore, the current algorithm will choose the maximum throughput under this case. One can think that the assumption that all link interfere are a bit strong, but considering that the uppder bound on radius of transmission is as high as a 20 metere building or 50 meteres in the longest case, this assumption actually not very unrealistic. However, because we are using 802.11, interference will not be a problem and if two link want to send at the same time and are separeted enough, this will still be possible.
+
+\subsubsection{Medium traffic}
+
+The case for medium traffic is similar to light traffic. Since the threshold is initiated at a relitavely large value, 100 packets, then it will take a while until a path gets congested and get rerouted to potentially suboptimal paths. Furthermore, the threshold is changing approximately proportionally to the changes in emptying rate, therefore, if the emptying rate changes drastically, the threshold value should change to reflect that.
+
+\subsubsection{Heavy traffic}
+
+Under heavy traffic conditions the behaviour of the algorithm is more complicated. However, what it will try to do is re-route packets through paths that have the next highest expected throughput. If congestion is high, then it will start distributing the loads to other nodes, which is good. Furthermore, it will try to distribute it to nodes that are not in interfering paths with currently congested nodes. This is important because there is no point in distributing the load, if only one link at a time can be used and the alternative path has lower throughput. The reason for this is that there will be no real parallelism. This is positive but comes at a cost. It will have to re-compute new paths for re-routing without the current congested nodes. This will cost the node $O(E + VlogV)$ computation time. However, it could potentially get parallelism in routing to the base and higher throughput. If throughput is extremely high and there are not ways to re-route successfully, then this algorithm will just decrease the contention window, which is the best it can do with the current state of the network.
 
 \subsubsection{Replay attacks}
 
