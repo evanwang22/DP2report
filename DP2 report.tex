@@ -256,13 +256,19 @@ Node Number & Total Expectet Transmittion Cost [TETC] & Explicit Congention Noti
 
 \subsection{Throughput algorithm}
 
-When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around congestion, while still trying to attaining the maximum throughput with the current state of the network. Note that it will use the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes, to be aware of its own congestion. This algorithm will also mark image packets that are being trying to route around congestion, such that they actually take a different route than through the congested node.
+When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around congestion, while still trying to attaining the maximum throughput with the current state of the network. Note that it will use the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes, to be aware of its own congestion.\\ 
 
-Recall that we only send images when the priority Queue for advertisments and public-keys is empty. The routing algorithm is as following:
+The main idea of the algorithm is very simple, if it can send the current packet through the best path, send it through that path, else try to re-route by excluding the congested node in the path.\\
+
+Recall that we only send images when the priority Queue for advertisments and public-keys is empty. The routing algorithm is implemented as follows by each node:
 
 \begin{enumerate}
-  \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the packet is not marked its being re-routed.
-  \item If the current packet is being 
+  \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the current packet is not marked its being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state changes to 1 of any neighbor, go to step 3 and change the appropriate ECN bit to 1.
+  \item If the current node gets any packet notification from our neighbors saying that they are are congested, then we update the ECNB to 1.
+  \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid and now try re-routing by considering the next best link. When considering a best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
+  \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes whenever Dijkstra's shortest path is computed.
+  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECN of 1, then route using to the best path with a contention window to half the size and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
+  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window. 
 \end{enumerate}
 
 
