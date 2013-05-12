@@ -267,28 +267,42 @@ its own congestion.\\
 
 The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
 it through that path, else try to re-route by excluding the congested node in the path.\\
-
-Recall that we only send images when the priority Queue for advertisments and public-keys is empty. The
-routing algorithm is implemented as follows by each node:
+ 
+Recall that we only send images when the priority Queue for advertisments and public-keys is empty. Recall at the initialization phase, the contention window is of size 100 packets. Then the routing algorithm is implemented as follows by each node:
 
 \begin{enumerate}
-  \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the
-  current packet is not marked its being re-routed. If a time-out ocurrs, and the congestion state of the 
-  neighbors does not change, repeat this step. If the congestion state changes to 1 of any neighbor, go to
-  step 3 and change the appropriate ECN bit to 1.
-  \item If the current node gets any packet notification from our neighbors saying that they are are 
-  congested, then we update the ECNB to 1.
-  \item If our current best path is congested, then add information to the image packet specifying which
-  (additional) node to avoid and now try re-routing by considering the next best link. When considering a 
-  best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
-  \item If the current image packet is marked as requiered re-routing, then compute another table of 
-  neighbors, but this time, exclude the congested nodes whenever Dijkstra's shortest path is computed.
-  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too 
-  many nodes with an ECN of 1, then route using to the best path with a contention window to half the size 
-  and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
-  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then
-  increase the contention window.
+
+  \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the current packet is not marked its being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state changes to 1 of any neighbor, go to step 3 and change the appropriate ECN bit to 1.
+  \item If the current node gets any packet notification from our neighbors saying that they are are congested, then we update the ECNB to 1.
+  \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid and now try re-routing by considering the next best link. When considering a best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
+  \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes whenever Dijkstra's shortest path is computed.
+  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECN of 1, then route using to the best path with a contention window to half the size and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
+  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
 \end{enumerate}
+
+\subsection{Explicit Congestion Notification Bit}
+
+An important but challening aspect of dealing with congestion is deciding when to consider a node is congested or not. Consider the figure 1: 
+ 
+\begin{figure}[ht!]
+\centering
+\includegraphics[width=3in, height=2.2in]{Queue4.jpg}
+\caption{\textbf{f1.txt} is the current version of the file}
+\end{figure}
+
+When a node has a queue length greather than k, then it will advertise that it is congested by sending a ECNB packet to all its neighbors. k is initialized for every node as 100. The way that k is changed depends on the number of neighbors around the current node and whether a packet was dropped or not. If a packet is dropped, it must not be informing quickly enough to its surrounding nodes about this, therefore decrease to half between wherever k is and 50:
+
+$$ k = max\{50, \frac{k + 50}{2} \}$$
+
+Every two scans we will adjust the value k. The first link to the path were you are rounting packets roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, we will determine how much you change your queue:
+
+if the percentage change is positive then it means we expect to send less packets, so the rate of packets leaving the queue is expected to decrease, so decrease the value of k:
+
+$$ k = max\{50, k -  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 50|   \}$$ 
+
+if the percentage change is negative then we expect to see the rate of emptying the queue increase, therefore k is increased:
+
+$$ k = min\{120, k +  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 120|   \}$$ 
 
 \subsection{Authentication}
 When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent by a malicious adversary). In the protocol presented in this paper, we use the RSA public-key cryptosystem to generate private and public-keys that will be used to authenticate messages. From here on, we use the term node and first responders interchangeably.
@@ -450,7 +464,7 @@ Our system is robust against replay attacks, as described in the "Authentication
 
 \subsubsection{Hop bypassing}
 
-If a node $k$ overhears a message that is intended for node $j$, it will drop the message, even if $k$ is closer to the base than $j$. Even though ignoring the message header in this case would increase throughput, in general, ignoring send() headers will quickly cause the protocol to break down. The routing system works on the assumption that the route calculated for a packet is the route the packet acually takes. Without this representation invariant, a node might incorrectly think a route no longer exists, and LSAs may be sent mistakenly, all of which decreases throughput in the long run. Thus, we sacrifice a small increase in throughput for an edge case in favor of simplicity of the protocol and long-term consistency of the update() and send() procedures.
+If a node $k$ overhears a message that is intended for node $j$, it will drop the message, even if $k$ is closer to the base than $j$. Even though ignoring the message header in this case would increase throughput, in general, ignoring send() headers will quickly cause the protocol to break down. The routing system works on the assumption that the route calculated for a packet is the route the packet acually takes. Without this representation invariant, a node might incorrectly think a route no longer exists, and LSAs may be sent mistakenly, all of which decreases throughput in the long run. Thus, we sacrifice a small increase in throughput for an edge case in favor of simplicity of the protocol and long-term consistency of the update() and send() procedures. We also note that this would never occur for location information, as GPS coordinates are transmitted through an LSA broadcast instead of send(). 
 
 \section{Conclusion}
 
