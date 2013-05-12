@@ -12,7 +12,7 @@ When deployed to a disaster-stricken area, first responders need to be able to e
 location and other information to their base camp. However, communication infrastructure is often unreliable
 or inaccessible during these crises. To solve this problem, we designed AdHocPro, an ad-hoc wireless network of
 portable devices that allows responders to send messages to their base camp in a reliable, efficient, and safe
-way. Our rigorous design accounts for the rapid changes in network topology that occur as the responders move 
+way. Our design accounts for the changes in network topology that occur as the responders move 
 around, as well as the possible presence of malicious agents in the field. 
 
 \subsection{Design Overview}
@@ -81,7 +81,7 @@ which decreases the amount of dropped packets and increases throughput.
 \\
 
 \noindent The authentification system was designed with an emphasis on security and simplicity.
-Each node signs its own messages with its private key, and the resulting ciphertext can be decrypted by any
+Each node signs its own messages with its private key, and the resulting signature can be verified by any
 node that has the public key. Therefore, only trusted nodes will be able to compose and forward messages, but
 nodes may still use the \textsc{broadcast} function as all of its neighbors, including non-trusted nodes, are
 capable of deciphering its messages. Preventing non-trusted nodes from viewing messages is not a system 
@@ -237,9 +237,8 @@ have the highest throughput possible when sending to the base. The algorithm des
 is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and
 new public-key packets have higher priority than images, this algorithm will only start sending image
 packets, when the other priority queue is empty and the images queue is not empty. Note that one packet
-cannot hold a full image, so images will be tried to be decided in different packets such that as much
-information can be fit into one packet while still leaving some small portion for appending information
-to that packet.
+cannot hold a full image, so images will be divided in different packets such that as much
+information can be fit into one packet while still leaving some small portion for appending information.
 
 \subsubsection{Throughput Metric and the Routing Table}
 
@@ -295,33 +294,26 @@ D & 17 & 1\\ [1ex]
 % is used to refer this table in the text
 \end{table}
 
-\subsubsection{Throughput algorithm}
+\subsubsection{Throughput Algorithm}
 
-When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge
-of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around 
-congestion, while still trying to attaining the maximum throughput with the current state of the network. 
-Note that it will use the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes, to be aware of 
-its own congestion.\\ 
+When sending images to the base, our goal is to maximize throughput based on our current knowledge of the network state. Therefore, in times of heavy congestion, the goal of our algorithm is to route around congested areas.
+Each node uses the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes to gain knowledge of its own level of congestion.\\ 
 
-\noindent The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
-it through that path, else try to re-route by excluding the congested node in the path.\\
- 
-
-Recall that we only send images when the priority Queue for advertisments and public-keys is empty. Recall at the initialization phase, the contention window is of size 100 packets and never reaches values bellow 10 nor above 200 packets. Then the routing algorithm is implemented as follows by each node:
+Recall that we only send images when the priority queue for advertisments and public keys is empty. At the initialization phase, the contention window size is 100 packets and never reaches values below 10 or above 200 packets. The routing algorithm is implemented by each node as follows:
 
 \begin{enumerate}
 
-  \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the current packet is not marked its being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state changes to 1 of any neighbor, go to step 3 and change the appropriate ECN bit to 1.
-  \item If the current node gets any packet notification from our neighbors saying that they are are congested, then we update the ECNB to 1.
-  \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid and now try re-routing by considering the next best link. When considering a best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
-  \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes and its edges whenever Dijkstra's shortest path is computed. If the current node is marked to avoid nodes A-B-...-X, but the current node has in its routing table that the congestion changed the ECNB to 0, then ignore the marking and go to step 1.
-  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECN of 1, then route using to the best path with a contention window to half the size and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
-  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
+  \item Send a contention window of image packets to the best path if its ECNB bit is 0 and the current packet is not marked as being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state of any neighbor changes to 1, go to step 3 and change the appropriate ECNB to 1.
+  \item If the current node gets any packet notification from its neighbors saying that it congested, update the ECNB to 1.
+  \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid. Try re-routing by considering the next best link. When considering a next best link, only consider neighboring nodes where neither of their neighbors have an ECNB of 1. 
+  \item If the current image packet is marked as requiring re-routing, then compute another table of neighbors, but this time, exclude the congested nodes and its edges whenever Dijkstra's shortest path is computed. If the current node is marked to avoid nodes A-B-...-X, but the current node has in its routing table that the congestion changed the ECNB to 0, then ignore the marking and go to step 1.
+  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECNB of 1, then route using to the best path with a halved contention window and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
+  \item If we receive all acks and the ECNB of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
 \end{enumerate}
 
 \subsubsection{Explicit Congestion Notification Bit}
 
-An important but challening aspect of dealing with congestion is deciding when to consider a node is congested or not. 
+An important but challening aspect of dealing with congestion is deciding whether a node is congested or not.
 Consider the figure 2 below.
 \\
  
@@ -332,8 +324,7 @@ Consider the figure 2 below.
 \end{figure}
 
 \noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending
-a ECNB packet to all its neighbors. k is initialized for every node as 100. The way that k is changed depends 
-on the number of neighbors around the current node and whether a packet was dropped or not. If a packet is
+a ECNB packet to all its neighbors. k is initialized for every node as 100. k changes based on the number of neighbors around the current node, as well as whether a packet was dropped or not. If a packet was
 dropped, it must not be informing quickly enough to its surrounding nodes about this, therefore decrease to half 
 between wherever k is and 50:
 
@@ -341,15 +332,15 @@ $$ k = max\{50, \frac{k + 50}{2} \}$$
 
 \noindent Every two scans we will adjust the value k. The first link to the path were you are rounting packets
 roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, 
-we will determine how much you change your queue.
+the algorithm determines how much to change the queue
 \\
 
-\noindent If the percentage change is positive then it means we expect to send less packets, so the rate of packets
-leaving the queue is expected to decrease, so decrease the value of k:
+\noindent If the percentage change is positive, then it means we expect to send less packets, so the rate of packets
+leaving the queue is expected to decrease. In this case, we decrease the value of k:
 
 $$ k = max\{50, k -  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 50|   \}$$ 
 
-\noindent If the percentage change is negative then we expect to see the rate of emptying the queue increase, therefore k is increased:
+\noindent If the percentage change is negative, then we expect to see the rate of emptying the queue increase. We increase k:
 
 $$ k = min\{120, k +  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 120|   \}$$ 
 
