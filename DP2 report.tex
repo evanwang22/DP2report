@@ -22,7 +22,6 @@ a packet from another node, or detect a dropped packet via timeout.
 \\
 
 \noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
-
 802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle, and additionally handles
 backoffs and time slot assignments between nodes sharing the medium. Our design also specifies a timeout time, 
 10 milliseconds, in order to determine when a packet has been dropped and must be resent. 10 ms is approximately 
@@ -74,7 +73,11 @@ distance vector, a node only knows of the best path to take to a destination. Th
 packet will stall until the next advertisement window.
 \\
 
-\noindent The algorithm for sending images used in this paper tries to re-route around congested nodes by calculating the next best path. It know about congestion through ECN packets from the node. The trade-off made here is in terms of computation time. To compute these type of alternative paths it costs additional computation time and keeping track of congested nodes. However, the potential benefits are parallization in image sending, which decreases the amount of dropped packets and increases throughput.
+\noindent The algorithm for sending images tries to re-route around congested nodes by 
+calculating the next best path. It know about congestion through ECN packets from the node. The trade-off made
+here is in terms of computation time. To compute these type of alternative paths it costs additional computation
+time and keeping track of congested nodes. However, the potential benefits are parallization in image sending, 
+which decreases the amount of dropped packets and increases throughput.
 \\
 
 \noindent The authentification system was designed with an emphasis on security and simplicity.
@@ -99,8 +102,6 @@ each node's routing table will contain a complete map of the network. Then, each
 run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
 have a consistent view of the topology and the same metric, resulting routes at different nodes will
 correspond to a valid path.
-\\
-
 
 \subsubsection{Location information}
 
@@ -163,7 +164,6 @@ C & 2 & ([A, 0.6], [B, 0.1])\\ [1ex]
 at every node once the protocol converges. This table enables a node to reconstruct the entire network
 and run a cost-finding algorithm in order to determine the best path a packet should take to reach the
 base.
-\\
 
 \subsubsection{Updating the network topology}
 
@@ -179,17 +179,17 @@ base.
   LSAs must be propagated throughout the entire network.
 \end{enumerate}
 
-\noindent Every 30 seconds (based on each node's internal clock), all nodes in the network will call 
+\noindent Every 30 seconds, all nodes in the network will call 
 \textsc{scan} in order to determine whether or not the network topology and success probabilities of
 paths have changed.If there are changes, nodes that are affected will construct LSAs accordingly and send
-these advertisements into the network. Nodes that have not had major changes in status will not need to
-create new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
-significantly over the course of 30 seconds, the network utilization of an update is smaller than the
-network utilization of the initial network setup. Less network congestion implies that this update
-procedure takes less time to complete than the setup.
+these advertisements into the network. Nodes that have not had major changes in status ($1/p_{success}$ rounds
+to the same integer number) will not need to create new advertisements. Resultingly, in a scenario in which
+not all nodes have changed their position significantly over the course of 30 seconds, the network utilization 
+of an update is smaller than the network utilization of the initial network setup. Less network congestion 
+implies that this update procedure takes less time to complete than the setup.
 \\
 
-\noindent There exist, however, some cases in which the state of the network changes dramatically in 
+\noindent However, in some cases the state of the network changes dramatically in 
 between network update intervals, and it is desirable to send LSAs as soon as we recognize a change.
 These situations are as follows:
 
@@ -207,9 +207,9 @@ These situations are as follows:
 \textsc{scan} whenever it encounters one of a few anomalous scenarios:
 
 \begin{enumerate}
-  \item A node attempts to send a packet down a link, but experiences (TO BE DETERMINED NUMBER) 
+  \item A node attempts to send a packet down a link, but experiences $1/p_{success}$, rounded up, 
   consecutive timeouts without a successful send.
-  \item A node successfully sends packets down a link (TO BE DETERMINED NUMBER) times without
+  \item A node successfully sends packets down a link $1/p_{failure}$, rounded up, consecutive times without
   experiencing a single timeout
   \item A node hears a scan from a node that is not a neighbor in its view of the network topology
 \end{enumerate}
@@ -232,7 +232,7 @@ network as soon as a connected node hears a scan.
 
 \subsection{Throughput for Sending Images}
 
-When the situation calls for the aid of first responders, it is important that images taken by these
+When the situation calls for the aid of first responders, images they take should
 have the highest throughput possible when sending to the base. The algorithm described in this section
 is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and
 new public-key packets have higher priority than images, this algorithm will only start sending image
@@ -518,8 +518,6 @@ nature of LSAs makes failure to inform the base of every connected node's locati
 
 A malicious node may always prevent a message from reaching the base by jamming the network with messages. Doing so prevents
 other nodes from sending their messages due to 802.11 MAC.
-
-\subsubsection{Behavior under different loads}
 
 \subsubsection{Light traffic}
 
