@@ -418,11 +418,19 @@ The authentication mechanism presented is also secure against replay attacks. Si
 There are two scenarios in which the system uses more resources than necessary. First, a packet may follow an optimal path
 to the base for a number of hops, only to find that a link on its path has died. The node will broadcast an advertisement
 and the packet will then be rerouted after it has already followed a path for a number of hops, which uses more additional
-resources. Another scenario arises from 
+resources. Secondly, after a link fails to send a packet a number of consecutive times, the sending node will call
+\textsc{scan}. However, it is possible the probability of the link has not changed and the sending node was unsuccessful.
+The \textsc{scan} in this scenario uses more resources than necessary to deliver a packet.
 
 \subsubsection{Fail to inform the base within 5 minutes}
 
+
+
+
 \subsubsection{Malicious node preventing a message}
+
+A malicious node may always prevent a message from reaching the base by jamming the network with messages. Doing so prevents
+other nodes from sending their messages due to 802.11 MAC.
 
 \subsubsection{Behavior under different loads}
 
