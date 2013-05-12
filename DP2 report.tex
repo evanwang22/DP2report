@@ -209,7 +209,7 @@ These situations are as follows:
 \begin{enumerate}
   \item A node attempts to send a packet down a link, but experiences $1/p_{success}$, rounded up, 
   consecutive timeouts without a successful send.
-  \item A node successfully sends packets down a link $1/p_{failure}$, rounded up, consecutive times without
+  \item A node successfully sends packets down a link $1/p_{loss}$, rounded up, consecutive times without
   experiencing a single timeout
   \item A node hears a scan from a node that is not a neighbor in its view of the network topology
 \end{enumerate}
@@ -234,11 +234,11 @@ network as soon as a connected node hears a scan.
 
 When the situation calls for the aid of first responders, images they take should
 have the highest throughput possible when sending to the base. The algorithm described in this section
-is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and
+is for routing images. Since advertisements (containing the GPS information of nodes) and
 new public-key packets have higher priority than images, this algorithm will only start sending image
-packets, when the other priority queue is empty and the images queue is not empty. Note that one packet
-cannot hold a full image, so images will be divided in different packets such that as much
-information can be fit into one packet while still leaving some small portion for appending information.
+packets when the priority queue is empty and the images queue is not empty. Note that one packet
+cannot hold a full image, so images will be divided into many packets such that each packet has a
+small portion that is used to append other information.
 
 \subsubsection{Throughput Metric and the Routing Table}
 
@@ -278,7 +278,7 @@ $$  Total \ Expected \ Transmission \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
 \begin{tabular}{c c c} % centered columns (3 columns)
 \hline
 \hline %inserts double horizontal lines
-Node ID & Total Expectet Transmittion Cost [TETC] & Explicit Congention Notification Bit [ECNB]  \\[0.5ex] % inserts table
+Node ID & Total Expected Transmittion Cost [TETC] & Explicit Congention Notification Bit [ECNB]  \\[0.5ex] % inserts table
 %heading
 \hline % inserts single horizontal line
 B [base] & 19 & 0\\
@@ -433,7 +433,7 @@ $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 
 
 It is possible that a new node will be added to the network after the deployment. 
-Therefore, it is important that other nodes are able to add new these new nodes to their Authentication Table.
+Therefore, other nodes must be able to add new nodes to their Authentication Tables.
 \\
 
 \noindent We address this by using the base as a trusted authority. The new node is required to report to the base
@@ -444,9 +444,6 @@ to obtain its own public and private key, as well as all of the public keys of t
 Then, the nodes forward the message, re-signing it each time, until every node has inserted the new public key of the new node into their table.
 
 \section{Analysis}
-
-\subsection{802.11}
-The reason 802.11 is a good design decision is because it is a tested protocol that has evidence of being successful. Furthemore, it adds to the simplicity of the deisgn by re-using good protocols. It eliminates the hidden node problem because it always senses before sending. However, even though it is not optimal for the exposed node problem, we are designing under the design principle of optimizing for the most common case. Therefore this trade-off is not very significant because that case does not happen that often and the other benifits already mentioned.
 
 \subsection{Routing protocol}
 
