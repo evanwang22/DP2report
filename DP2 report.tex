@@ -278,7 +278,8 @@ routing algorithm is implemented as follows by each node:
   many nodes with an ECN of 1, then route using to the best path with a contention window to half the size 
   and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
   \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then
-  increase the contention window. 
+  increase the contention window.
+\end{enumerate}
 
 \subsection{Authentication}
 When designing a communication system for first responders, its important that first responders are able to trust the messages they are receiving from fellow first responders. Therefore it is important to establish a mechanism by which first responders can authenticate “benign” messages (i.e. messages not sent by a malicious adversary). In the protocol presented in this paper, we use the RSA public-key cryptosystem to generate private and public-keys that will be used to authenticate messages. From here on, we use the term node and first responders interchangeably.
@@ -374,6 +375,31 @@ After this step, the base sends a special message (that it signs) and distribute
 Then, the nodes forward the message, re-signing it each time, until every node has inserted the new public key of the new node into their table.
 
 \section{Analysis}
+
+\subsection{Routing protocol}
+
+As mentioned previously, our link-state scheme has both advantages and disadvantages compared to alternative protocols
+such as distance vector. Overall, the analysis will show why a link-state-based protocol is preferable. The initial
+setup cost of our protocol is greater than that of a distance vector based one, both consuming more network bandwidth
+and requiring more time to converge. However, at each update interval, link-state only requires that new changes
+be broadcast across the network, whereas distance vector will flood the network, simultaneously calculating the 
+best path and updating every node's routing information. Given the relatively low speed of first responders, we 
+conclude that the average network topology change over an advertisement interval is small. Therefore, link-state is
+preferable because the average amount of information link-state will broadcast at each update interval in a real world
+scenario is less than that of distance vector.
+\\
+
+\noindent Our design is also robust against topology changes between update intervals. Our protocol is designed to react
+to major changes in topology by sending LSAs as soon as a change is detected. Because each node has a complete view of 
+the network topology, each node can locally recompute the best route to the base as soon as it hears a link or node has 
+been lost, updated, or added. A distance-vector protocol would be unable to recompute new routes to the base station
+between update intervals because any updates to routing information need to be initiated from the base node.
+\\
+
+\noindent Finally, every link-state advertisement is broadcast to every node in the network. Resultantly, the base
+will hear every link-state advertisement originating from a connected node. Our design takes advantage of this fact by
+bundling GPS information on each node into its link-state advertisement. This optimization, available only to link-state
+based protocols, simplifies our cost metric and fulfills a system requirement. 
 
 \subsection{Authentication}
 Under the assumption that the base and legitimate nodes are all trusted, the authentication system presented is extremely secure. This is because during the initialization phase, everyone obtained a secure key from the trusted authority (the base). Therefore, if no new first responders join the network, every node in the network so far will be able to verify and sign every message that it receives or sends. \\
