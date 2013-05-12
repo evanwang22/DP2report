@@ -11,14 +11,76 @@
 
 When deployed to a disaster-stricken area, first responders need to be able to efficiently communicate their
 location and other information to their base camp. However, communication infrastructure is often unreliable
-or inaccessible during these crises. To solve this problem, we design an ad-hoc wireless network of portable
-devices that allows responders to send messages to their base camp in a reliable, efficient, and safe way.
-Our rigorous design accounts for the rapid changes in network topology that occur as the responders move 
+or inaccessible during these crises. To solve this problem, we designed AdHocPro, an ad-hoc wireless network of
+portable devices that allows responders to send messages to their base camp in a reliable, efficient, and safe
+way. Our rigorous design accounts for the rapid changes in network topology that occur as the responders move 
 around, as well as the possible presence of malicious agents in the field. 
 
 \subsection{Design Overview}
 
+Our design is built on top of 802.11 MAC and uses TCP in order return ACKs when a node successfully receives
+a packet from another node.
+\\
+
+\noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
+802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle. ...MORE 802.11
+IS GOOD STUFF HERE...(TODO)
+\\
+
+\noindent Our link-state based routing protocol enables each first responder to send messages to the base anytime
+there is a sequence of connected nodes between the sender and the base station. The link-state advertisements 
+sent by our routing protocol from each node at every advertisement interval of 30 seconds will contain the node's
+GPS  information, reliably delivering the location information of each node to the base station no more than
+5 minutes after the base previously learned the location of that node.
+\\
+
+\noindent A cost metric, calculated by the integration step of our routing protocol, enables our design to measure
+the effectiveness of each possible path to the base station and choose paths which maximize the image 
+throughput of the network. The design also draws upon elements of data center TCP (DCTCP) in order to relay 
+information regarding queues at each node to minimize the effects of network congestion when there are many
+image messages to be delivered to the base station. 
+\\
+
+\noindent The final component of our design is an authentication system. Our design seeks to accept messages
+only from first responders, and should not forward messages from non-trusted nodes of include such nodes in
+its routes. To this end, the system uses a public/private key signature scheme, where each node has a private
+key which it uses to sign its messages. Other nodes may then decode the message using the sender's
+public key, but even if a non-trusted node hears and decodes a message using the public key, it will be 
+unable to sign any messages without the private key of a known node. A sequence number attached to each
+message allows nodes to discard messages which they have previously heard, stymying replay attacks from
+malicious sources.
+
 \subsection{Tradeoffs and Design Decisions}
+
+The central design consideration of AdHocPro is efficiency. System components are designed to provide
+functionality which contributes to multiple system requirements while maintaining relative simplicity.
+This is emphasized in design decisions because of the number of the large number of different use cases,
+network topologies, and edge case scenarios which ad-hoc wireless networks experience. If these scenarios
+can all be accounted without introducing additional components, our system will be more robust. A 
+secondary design emphasis was placed on correctness. If given the choice between a less computationally
+expensive but possibly incorrect metric and a computation-heavy but likely correct metric, AdHocPro will
+use the latter. This is because every packet sent adds to network congestion, and mistakes are therefore
+very costly.
+\\
+
+\noindent As a result of these decisions, link-state was chosen over distance vector as AdHocPro's routing
+protocol. Link-state does come with a higher initial setup cost than distance vector as a greater number of
+advertisements must flood the entire network. The overall bandwidth and time consumed by this operation
+is relatively high. However, link-state gives each node a complete view of the network. If a link a packet's
+original path fails, any node along the path may recompute a new path for a packet to take to the base. In
+distance vector, a node only knows of the best path to take to a destination. Therefore if a link fails, the
+packet will stall until the next advertisement window.
+\\
+
+\noindent COST METRIC TRADEOFFS (TODO)
+\\
+
+\noindent The authentification system was designed with an emphasis on meeting requirements and simplicity.
+Each node signs its own messages with its private key, and the resulting ciphertext can be decrypted by any
+node that has the public key. Therefore, only trusted nodes will be able to compose and forward messages, but
+nodes may still use the \textsc{broadcast} function as all of its neighbors, including non-trusted nodes, are
+capable of deciphering its messages. Disallowing non-trusted nodes from viewing messages is not a system 
+requirement, and would also complicate our security protocol, so we decided not to support this.
 
 \section{Design}
 
@@ -35,17 +97,42 @@ each node's routing table will contain a complete map of the network. Then, each
 run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
 have a consistent view of the topology and the same metric, resulting routes at different nodes will
 correspond to a valid path.
-\\
 
-\noindent There are two data structures which our routing protocol uses: link-state advertisements (LSAs)
-and routing tables. 
+\subsubsection{Location information}
+
+\noindent Because the link-state routing protocol floods network updates across all nodes in the network,
+an advertisement from every single node will reach the base station. Thus, location updates can be built 
+into the system's routing protocol itself. Location information for each node is added to its 
+advertisements, so once the link-state protocol converges, the base station is guaranteed to know the
+location of every node reachable from the base.
+
+\subsubsection{Data structures}
+
+\noindent There are two data structures which our routing protocol uses: \emph{link-state advertisements} 
+(LSAs) and \emph{network tables}. 
 \\
 
 \noindent Link-state advertisements have the following format:
+
+$$ [\textnormal{nodeID}, \textnormal{GPS}, \textnormal{seq}, (nbhr1, lossprob1), 
+(nbhr2, lossprob2), (nbhr3, lossprob3), ...] $$
+
+\noindent Where \emph{nodeID} is the ID of the node, each \emph{nhbr} is a current neighbor of the node,
+\emph{lossprob} is that neighbor's corresponding loss probability, and \emph{GPS} is the current location
+reading. Additionally, each LSA has a sequence number, \emph{seq} that starts at 0 when the node turns on
+and increments by 1 every time the node issues an LSA. When a node receives an LSA that originated at another
+node, $n$, it first checks the sequence number of the last LSA from $n$. If the current sequence number is 
+greater than the saved value for $n$, then the node re-broadcasts the LSA to its neighbors, and updates the 
+saved value. Otherwise, it discards the LSA, because that same or later LSA must have been re-broadcasted 
+before by the node. 
 \\
 
-\noindent Routing tables:
+\noindent Network tables: The network table must store LSAs issued from every node in the network. This
+table will enable a node to reconstruct the entire network and run a cost-finding algorithm in order to
+determine the best path a packet should take to reach the base. (TODO: FIGURES)
 \\
+
+\subsubsection{Updating the network topology}
 
 \noindent Initially, the network undergoes the following procedure that discovers the network topology:
 
@@ -58,13 +145,11 @@ and routing tables.
   LSAs must be propagated throughout the entire network.
 \end{enumerate}
 
-\subsubsection{Updating the network topology}
-
-Every 30 seconds (based on each node's internal clock), all nodes in the network will call \textsc{scan} in
-order to determine whether or not the network topology and success probabilities of paths have changed.
-If there are changes, nodes that are affected will construct LSAs accordingly and send these
-advertisements into the network. Nodes that have not had major changes in status will not need to create
-new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
+\noindent Every 30 seconds (based on each node's internal clock), all nodes in the network will call 
+\textsc{scan} in order to determine whether or not the network topology and success probabilities of
+paths have changed.If there are changes, nodes that are affected will construct LSAs accordingly and send
+these advertisements into the network. Nodes that have not had major changes in status will not need to
+create new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
 significantly over the course of 30 seconds, the network utilization of an update is smaller than the
 network utilization of the initial network setup. Less network congestion implies that this update
 procedure takes less time to complete than the setup.
@@ -160,7 +245,7 @@ When designing a communication system for first responders, its important that f
   \item The first responder's most recent message ID.
 \end{enumerate}
 
-From here on, we will use the term node and first responders interchangeably.
+From here on, I will use the term node and first responders interchangeably.
 
 \subsection{Initilization}
 At the initialization phase of the Ad-hoc network, all nodes are required that they first report to the base before departing. 
@@ -169,7 +254,7 @@ Since at this step of the protocol we know exactly which nodes are going to be a
 This will be quintessential for nodes' capability of verifying messages.
 
 \subsubsection{The Table for Authentication}
-Recall that everyone will have a table with an entry for each ally node. The table will containing two important numbers for each node; the node's public-key and the node's latest message ID number. The latest message ID number is a counter-like number inserted to every message a node sends such that each node can idenfity ruplicate messages and be protected from malicious nodes trying to plot replay attacks. Consider Table 1 for a depiction of this table:
+Recall that everyone will have a table with an entry for each ally node. The table will containing two important numbers for each node; the node's public-key and the node's latest message ID number. The latest message ID number is a counter-like number inserted to every message a node sends such that each node can idenfity ruplicate messages and be protected from malicious nodes trying to plot repaly attacks. Consider Table 1 for a depiction of this table:
 
 \begin{table}[ht]
 \caption{Athentication Table} % title of Table
@@ -212,7 +297,6 @@ $$\textsc{VERIFY}(signature, cooresponding\_public\_key) =  b $$
 Notice that when we say, matches, we mean that verify is indeed the inverse function of sign when the correct public-key is applied relative to the correct private-key used to sign the message.
 The output of $\textsc{VERIFY}$ will be either, the boolean true if the verification passes with that public-key, or false if it doesn't. If the verification fails, then the message will not be forwarded. 
 \\
-\\
 The way that a node decides which public-keys to apply is simple, since it knows it neighboring nodes, it indexes the Authentication table using each of the node's number and then obtains the corresponding public key.
 This will work since, when forwarding messages, nodes re-sign the contents of the message.
 Once the authentication has passed, then the node will use the following function to get the message:
@@ -222,14 +306,15 @@ $$\textsc{GET\_MESSAGE}(message, corresponding\_public\_key) = m$$
 
 This function returns the corresponding message when applying the inverse function of the sign function using the correct public-key.
 
-
 \subsubsection{Dealing with replay attacks}
 
 It is also a problem when malicious nodes get a valid signed message and then potentially try to flood the network with unnecessary messages. The way that our protocol deals with this problem is that, all messages are marked with a message ID number that is a counter that is matched to a specific node. This counter is increased everytime before a message is sent suring the signed procedure. Therefore the format of a message looks like this:
 
 $$message = (message\_information, \ message\_ID\_Number)$$
 
-After \textsc{VERIFY} validates that the current message indeed was sent at one point by an allied node, it will then check that the message ID number is not outdated and thus invalid. The way to check this is by feeding the node number that made VERIFY accept along with the current ID message to the following procedure:\\ \\
+After \textsc{VERIFY} validates that the current message indeed was sent at one point by an allied node, it will then check that the message ID number
+is not outdated and thus invalid. The way to check this is by feeding the node number that made VERIFY accept along with the current ID message to the
+following procedure:\\ \\
 $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 \hspace*{10 mm} $lastest\_ID\_number\_from\_table = this.authentication\_table[node\_number].get\_Latest\_Message\_ID();$
 \hspace*{10 mm} $if \ (current\_message.ID > latest\_ID\_number\_from\_table):$\\
@@ -250,8 +335,6 @@ The new node is required to report to the base and from their obtain all of the 
 After this the base will send a special message (that he will sign) and distribute the new public-key to the network. 
 Then the nodes will forward the message and re-sign it and then everyone will insert the new public-key of the new node to the network. Note that the base can also sign the new pair of keys for the new node and then the node can distribute them himself with sign message if neccessary.
 
-Jamming is a always a potential problem
-
 \section{Analysis}
 
 \subsection{Authentication}
@@ -262,12 +345,6 @@ However, we can not ignore the potential scalability problem of this initial des
 Since the private-keys are generated with RSA, the probability that a malicious node guesses a key and is able to find a colliding signature is negligible. This statement holds even when the node is able to see valid signatures because its extremely hard to obtain the private-key. This is true if one believes that factoring large numbers is an intractable problem with the present knowledge in computer science. Furthermore, even if a malicious node generates his own private-key, nodes are extremely unlikely to accept any messages that malicious node could sign. The only case where a malicious node could obtain a valid private-key, is if the key that he generated collides with a private-key that was already assigned. The probability of this even is extremely unlikely. The keys used for RSA are usually of length 2048 bits, therefore, the probability that one key generates by a malicious node a collides with an already generated private key is $2^{2048}$. The likelihood of collisions starts being a problem only when the graph start getting exponentially large. This case is extremely unlikely and even if this is the case, the number of bits for keys could just be increased, making RSA again more secure.\\
 
 The authentication mechanism presented is also secure against replay attacks. If a malicious node tries to forward a valid message, first responders will reject the message (or messages), because they will extract the message ID and compare it with the latest message ID they have received. If the message ID is outdated, then first responders will not forward during replay attacks.
-
-If one wanted to relax the assumption that nodes or the base could be overrun and therefore some or all the keys in the network could be stolen one can make some improvments to this design. Note that these improvements may add to the complexity of the protocol.
-
-If nodes could be hacked, one improvement that could be done is that if the figures out that it was hacked, it can report this to the base by going physically to the base and then the base can re-assign keys and distribute the change in keys.
-
-However, if the base is compromised a different strategy has to take place. One possible stategy is that every 30 minutes or hour or some specific time interval, every node reports to the base and all the public and private-keys are re-generated. This way the node has would be forced to re-hack the base if we wants to be succesful again, and hacking the base multiple times should be difficult.
 
 \section{Conclusion}
 
