@@ -248,6 +248,7 @@ where $p_{i} = 1 - p_{loss}$ is the probability of success of sending to an adja
 edge corresponds to the expected number of packets that a node has to send to yield one successful
 transmission. Once it has the graph it will construct a routing table containing the following information:
 
+
 \begin{enumerate}
   \item The best cost path by taking the link going to adjacent node j. These costs will be considered during times of congestion.
   \item The Explicit Congestion Notification Bit (ECNB), which takes value 1 if going to node j takes us to a path that is considered congested or 0 otherwise.
@@ -437,6 +438,7 @@ $def \ check\_ID\_number(node\_number, current\_message\_ID)$ \\
 
 \subsubsection{Scalability and Updating the Authentication Table}
 
+
 It is possible that a new node will be added to the network after the deployment. 
 Therefore, it is important that other nodes are able to add new these new nodes to their Authentication Table.
 \\
@@ -533,4 +535,9 @@ users and effectively delivering location and images across the network, AdHocPr
 
 \section{References}
 
+[1] Sergio Benitez, May 2013. Personal communication
+
+\noindent[2] Cormen, Leiserson, Rivest, Stein, Introduction to Algorithms 3rd Edition. Cambridge, Massachussets: MIT Press
+
+\noindent[3] Hari Balakrishnan, Chris Terman, 6.02 Course notes, Cambridge, Massachussets: MIT Press, September 2012
 \end{document}
