@@ -17,11 +17,12 @@ around, as well as the possible presence of malicious agents in the field.
 
 \subsection{Design Overview}
 
-Our design is built on top of 802.11 MAC and uses TCP in order return ACKs when a node successfully receives
-a packet from another node, or detect a dropped packet via timeout.
+Our design is built on top of 802.11 MAC and uses a similar idea as TCP in order return ACKs when a node successfully receives
+a packet from another node, or detect a dropped packet via timeout. However, TCP does it from source to destination, and in this protocol the next node is the destination, there are ack each time.
 \\
 
-\noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time, 802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle, and additionally handles
+\noindent Because wireless links suffer from interference if multiple nodes attempt to transmit at the same time,
+802.11 MAC allows our nodes to sense the medium and transmit only if the medium is idle, and additionally handles
 backoffs and time slot assignments between nodes sharing the medium. Our design also specifies a timeout time, 
 10 milliseconds, in order to determine when a packet has been dropped and must be resent. 10 ms is approximately 
 twice the average RTT of a ping to http://mit.edu from a laptop on MIT wireless internet.
@@ -72,7 +73,11 @@ distance vector, a node only knows of the best path to take to a destination. Th
 packet will stall until the next advertisement window.
 \\
 
-\noindent The algorithm for sending images used in this paper tries to re-route around congested nodes by calculating the next best path. Nodes learn about congestion through ECN packets from the node. The trade-off made here is in terms of computation time. To compute alternative paths costs additional computation time and also does keeping track of congested nodes. However, the potential benefits are parallization in image sending, which decreases the amount of dropped packets and increases throughput.
+\noindent The algorithm for sending images tries to re-route around congested nodes by 
+calculating the next best path. It know about congestion through ECN packets from the node. The trade-off made
+here is in terms of computation time. To compute these type of alternative paths it costs additional computation
+time and keeping track of congested nodes. However, the potential benefits are parallization in image sending, 
+which decreases the amount of dropped packets and increases throughput.
 \\
 
 \noindent The authentification system was designed with an emphasis on security and simplicity.
@@ -97,8 +102,6 @@ each node's routing table will contain a complete map of the network. Then, each
 run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
 have a consistent view of the topology and the same metric, resulting routes at different nodes will
 correspond to a valid path.
-\\
-
 
 \subsubsection{Location information}
 
@@ -161,7 +164,6 @@ C & 2 & ([A, 0.6], [B, 0.1])\\ [1ex]
 at every node once the protocol converges. This table enables a node to reconstruct the entire network
 and run a cost-finding algorithm in order to determine the best path a packet should take to reach the
 base.
-\\
 
 \subsubsection{Updating the network topology}
 
@@ -177,17 +179,17 @@ base.
   LSAs must be propagated throughout the entire network.
 \end{enumerate}
 
-\noindent Every 30 seconds (based on each node's internal clock), all nodes in the network will call 
+\noindent Every 30 seconds, all nodes in the network will call 
 \textsc{scan} in order to determine whether or not the network topology and success probabilities of
 paths have changed.If there are changes, nodes that are affected will construct LSAs accordingly and send
-these advertisements into the network. Nodes that have not had major changes in status will not need to
-create new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
-significantly over the course of 30 seconds, the network utilization of an update is smaller than the
-network utilization of the initial network setup. Less network congestion implies that this update
-procedure takes less time to complete than the setup.
+these advertisements into the network. Nodes that have not had major changes in status ($1/p_{success}$ rounds
+to the same integer number) will not need to create new advertisements. Resultingly, in a scenario in which
+not all nodes have changed their position significantly over the course of 30 seconds, the network utilization 
+of an update is smaller than the network utilization of the initial network setup. Less network congestion 
+implies that this update procedure takes less time to complete than the setup.
 \\
 
-\noindent There exist, however, some cases in which the state of the network changes dramatically in 
+\noindent However, in some cases the state of the network changes dramatically in 
 between network update intervals, and it is desirable to send LSAs as soon as we recognize a change.
 These situations are as follows:
 
@@ -205,9 +207,9 @@ These situations are as follows:
 \textsc{scan} whenever it encounters one of a few anomalous scenarios:
 
 \begin{enumerate}
-  \item A node attempts to send a packet down a link, but experiences (TO BE DETERMINED NUMBER) 
+  \item A node attempts to send a packet down a link, but experiences $1/p_{success}$, rounded up, 
   consecutive timeouts without a successful send.
-  \item A node successfully sends packets down a link (TO BE DETERMINED NUMBER) times without
+  \item A node successfully sends packets down a link $1/p_{failure}$, rounded up, consecutive times without
   experiencing a single timeout
   \item A node hears a scan from a node that is not a neighbor in its view of the network topology
 \end{enumerate}
@@ -230,8 +232,8 @@ network as soon as a connected node hears a scan.
 
 \subsection{Throughput for Sending Images}
 
-When the situation calls for the aid of first responders, it is important that images taken by these
-have the highest throughput to the base. The algorithm described in this section
+When the situation calls for the aid of first responders, images they take should
+have the highest throughput possible when sending to the base. The algorithm described in this section
 is the algorithm for routing images. Since advertisements (containing the GPS information of nodes) and
 new public-key packets have higher priority than images, this algorithm will only start sending image
 packets, when the other priority queue is empty and the images queue is not empty. Note that one packet
@@ -291,7 +293,8 @@ D & 17 & 1\\ [1ex]
 % is used to refer this table in the text
 \end{table}
 
-\subsubsection{Throughput algorithm}
+\subsubsection{Throughput Algorithm}
+
 
 When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge
 of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around 
@@ -306,17 +309,17 @@ At the initialization phase, the contention window is of size 100 packets and ne
 
 \begin{enumerate}
 
-  \item First try sending a contention window of image packets to the best path if it's ECNB bit is 0 and the current packet is not marked its being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state changes to 1 of any neighbor, go to step 3 and change the appropriate ECN bit to 1.
-  \item If the current node gets any packet notification from our neighbors saying that they are are congested, then we update the ECNB to 1.
-  \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid and now try re-routing by considering the next best link. When considering a best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
-  \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes and its edges whenever Dijkstra's shortest path is computed. If the current node is marked to avoid nodes A-B-...-X, but the current node has in its routing table that the congestion changed the ECNB to 0, then ignore the marking and go to step 1.
-  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECN of 1, then route using to the best path with a contention window to half the size and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
-  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
+  \item Send a contention window of image packets to the best path if its ECNB bit is 0 and the current packet is not marked as being re-routed. If a time-out ocurrs, and the congestion state of the neighbors does not change, repeat this step. If the congestion state of any neighbor changes to 1, go to step 3 and change the appropriate ECNB to 1.
+  \item If the current node gets any packet notification from its neighbors saying that it congested, update the ECNB to 1.
+  \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid. Try re-routing by considering the next best link. When considering a next best link, only consider neighboring nodes where neither of their neighbors have an ECNB of 1. 
+  \item If the current image packet is marked as requiring re-routing, then compute another table of neighbors, but this time, exclude the congested nodes and its edges whenever Dijkstra's shortest path is computed. If the current node is marked to avoid nodes A-B-...-X, but the current node has in its routing table that the congestion changed the ECNB to 0, then ignore the marking and go to step 1.
+  \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECNB of 1, then route using to the best path with a halved contention window and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
+  \item If we receive all acks and the ECNB of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
 \end{enumerate}
 
 \subsubsection{Explicit Congestion Notification Bit}
 
-An important but challening aspect of dealing with congestion is deciding when to consider a node is congested or not. 
+An important but challening aspect of dealing with congestion is deciding whether a node is congested or not.
 Consider the figure 2 below.
 \\
  
@@ -326,25 +329,24 @@ Consider the figure 2 below.
 \caption{\textbf{The Queue for images}}
 \end{figure}
 
-\noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending
-a ECNB packet to all its neighbors. k is initialized for every node as 100. One way that k is changed depends 
+\noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending an ECNB packet to all its neighbors. k is initialized for every node as 100. One way that k is changed depends 
 whether a packet was dropped or not. If a packet is
 dropped, it must inform its getting congested, therefore decrease k 
 in between its own value and 50:
 
+
 $$ k = max\{50, \frac{k + 50}{2} \}$$
 
 \noindent Every two scans we will adjust the value k. The first link to the path were you are rounting packets
-roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, 
-we will determine how much to change the thershold.
+roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, we will determine how much to change the thershold.
 \\
 
-\noindent If the percentage change is positive then it means we expect to send less packets, so the rate of packets
-leaving the queue is expected to decrease, so decrease the value of k:
+\noindent If the percentage change is positive, then it means we expect to send less packets, so the rate of packets
+leaving the queue is expected to decrease. In this case, we decrease the value of k:
 
 $$ k = max\{50, k -  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 50|   \}$$ 
 
-\noindent If the percentage change is negative then we expect to see the rate of emptying the queue increase, therefore k is increased:
+\noindent If the percentage change is negative, then we expect to see the rate of emptying the queue increase. We increase k:
 
 $$ k = min\{120, k +  \frac{|\frac{1}{p_{new}} - \frac{1}{p_{old}}|}{\frac{1}{p_{old}}}|k - 120|   \}$$ 
 
@@ -448,9 +450,6 @@ Then, the nodes forward the message, re-signing it each time, until every node h
 
 \section{Analysis}
 
-\subsection{802.11}
-The reason 802.11 is a good design decision is because it is a tested protocol that has evidence of being successful. Furthemore, it adds to the simplicity. It eliminates the hidden node problem because it always senses before sending. However, even though it is not optimal for the exposed node problem, we are designing under the design principle of optimizing for the most common case. Therefore this trade-off is not very significant.
-
 \subsection{Routing protocol}
 
 As mentioned previously, our link-state scheme has both advantages and disadvantages compared to alternative protocols
@@ -512,8 +511,6 @@ nature of LSAs makes failure to inform the base of every connected node's locati
 
 A malicious node may always prevent a message from reaching the base by jamming the network with messages. Doing so prevents
 other nodes from sending their messages due to 802.11 MAC.
-
-\subsubsection{Behavior under different loads}
 
 \subsubsection{Light traffic}
 
