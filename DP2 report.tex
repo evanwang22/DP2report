@@ -426,11 +426,13 @@ resources. Another scenario arises from
 
 \subsubsection{Behavior under different loads}
 
-\subsubsection{Replay attack}
+\subsubsection{Replay attacks}
+
+Our system is robust against replay attacks, as described in the "Authentication" section. Using the Authentication Table, nodes can quickly determine that a message is a replay of a previously heard message using the message IDs. However, a replay attack will still use network bandwidth and cause more losses of legitimate packets, which is something we cannot prevent.
 
 \subsubsection{Hop bypassing}
 
-\subsubsection{Base hears unintended message}
+If a node $k$ overhears a message that is intended for node $j$, it will drop the message, even if $k$ is closer to the base than $j$. Even though ignoring the message header in this case would increase throughput, in general, ignoring send() headers will quickly cause the protocol to break down. The routing system works on the assumption that the route calculated for a packet is the route the packet acually takes. Without this representation invariant, a node might incorrectly think a route no longer exists, and LSAs may be sent mistakenly, all of which decreases throughput in the long run. Thus, we sacrifice a small increase in throughput for an edge case in favor of simplicity of the protocol and long-term consistency of the update() and send() procedures.
 
 \section{Conclusion}
 
