@@ -100,7 +100,8 @@ correspond to a valid path.
 \\
 
 \noindent Every time a node successfully sends a packet to a recipient, the recipient sends back an ACK.
-If a node does not recieve
+If a node does not receive an ACK within 10 milliseconds of sending a packet, the packet is considered
+lost. This figure is approximately twice the RTT between a laptop on MIT wireless and www.mit.edu.
 
 \subsubsection{Location information}
 
@@ -366,6 +367,31 @@ Then the nodes will forward the message and re-sign it and then everyone will in
 
 \section{Analysis}
 
+\subsection{Routing protocol}
+
+As mentioned previously, our link-state scheme has both advantages and disadvantages compared to alternative protocols
+such as distance vector. Overall, the analysis will show why a link-state-based protocol is preferable. The initial
+setup cost of our protocol is greater than that of a distance vector based one, both consuming more network bandwidth
+and requiring more time to converge. However, at each update interval, link-state only requires that new changes
+be broadcast across the network, whereas distance vector will flood the network, simultaneously calculating the 
+best path and updating every node's routing information. Given the relatively low speed of first responders, we 
+conclude that the average network topology change over an advertisement interval is small. Therefore, link-state is
+preferable because the average amount of information link-state will broadcast at each update interval in a real world
+scenario is less than that of distance vector.
+\\
+
+\noindent Our design is also robust against topology changes between update intervals. Our protocol is designed to react
+to major changes in topology by sending LSAs as soon as a change is detected. Because each node has a complete view of 
+the network topology, each node can locally recompute the best route to the base as soon as it hears a link or node has 
+been lost, updated, or added. A distance-vector protocol would be unable to recompute new routes to the base station
+between update intervals because any updates to routing information need to be initiated from the base node.
+\\
+
+\noindent Finally, every link-state advertisement is broadcast to every node in the network. Resultantly, the base
+will hear every link-state advertisement originating from a connected node. Our design takes advantage of this fact by
+bundling GPS information on each node into its link-state advertisement. This optimization, available only to link-state
+based protocols, simplifies our cost metric and fulfills a system requirement. 
+
 \subsection{Authentication}
 Under the assumption that the base and nodes are not going to be overrun, the authentication system presented is extremely secure. The reason that this is the case is because, at the initialization phase, everyone obtained a secure key from the trusted authority (the base). Therefore, if no new first responders join the network, every node in the network so far will be able to verify and sign every message that it receives or sends. This is great for networks where we have a fixed number of nodes in the network. \\
 
@@ -374,6 +400,7 @@ However, we can not ignore the potential scalability problem of this initial des
 Since the private-keys are generated with RSA, the probability that a malicious node guesses a key and is able to find a colliding signature is negligible. This statement holds even when the node is able to see valid signatures because its extremely hard to obtain the private-key. This is true if one believes that factoring large numbers is an intractable problem with the present knowledge in computer science. Furthermore, even if a malicious node generates his own private-key, nodes are extremely unlikely to accept any messages that malicious node could sign. The only case where a malicious node could obtain a valid private-key, is if the key that he generated collides with a private-key that was already assigned. The probability of this even is extremely unlikely. The keys used for RSA are usually of length 2048 bits, therefore, the probability that one key generates by a malicious node a collides with an already generated private key is $2^{2048}$. The likelihood of collisions starts being a problem only when the graph start getting exponentially large. This case is extremely unlikely and even if this is the case, the number of bits for keys could just be increased, making RSA again more secure.\\
 
 The authentication mechanism presented is also secure against replay attacks. If a malicious node tries to forward a valid message, first responders will reject the message (or messages), because they will extract the message ID and compare it with the latest message ID they have received. If the message ID is outdated, then first responders will not forward during replay attacks.
+
 
 \section{Conclusion}
 
