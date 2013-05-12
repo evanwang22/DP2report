@@ -97,6 +97,10 @@ each node's routing table will contain a complete map of the network. Then, each
 run a computation based on our cost metric to find the shortest routes to the base. As long as the nodes
 have a consistent view of the topology and the same metric, resulting routes at different nodes will
 correspond to a valid path.
+\\
+
+\noindent Every time a node successfully sends a packet to a recipient, the recipient sends back an ACK.
+If a node does not recieve
 
 \subsubsection{Location information}
 
@@ -147,7 +151,7 @@ determine the best path a packet should take to reach the base. (TODO: FIGURES)
 
 \noindent Every 30 seconds (based on each node's internal clock), all nodes in the network will call 
 \textsc{scan} in order to determine whether or not the network topology and success probabilities of
-paths have changed.If there are changes, nodes that are affected will construct LSAs accordingly and send
+paths have changed. If there are changes, nodes that are affected will construct LSAs accordingly and send
 these advertisements into the network. Nodes that have not had major changes in status will not need to
 create new advertisements. Resultingly, in a scenario in which not all nodes have changed their position
 significantly over the course of 30 seconds, the network utilization of an update is smaller than the
