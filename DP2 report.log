@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  12 MAY 2013 13:16
+This is pdfTeX, Version 3.1415926-2.4-1.40.13 (TeX Live 2012) (format=pdflatex 2012.6.30)  12 MAY 2013 14:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -292,29 +292,40 @@ Overfull \hbox (46.992pt too wide) in paragraph at lines 232--249
  [][] 
  []
 
+
+Underfull \hbox (badness 10000) in paragraph at lines 253--258
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 259--261
+
+ []
+
+[5]
 Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
 Missing character: There is no œ in font cmr10!
 Missing character: There is no â in font cmr10!
 Missing character: There is no € in font cmr10!
 Missing character: There is no  in font cmr10!
-[5]
-Underfull \hbox (badness 10000) in paragraph at lines 315--319
+ [6]
+Underfull \hbox (badness 10000) in paragraph at lines 335--339
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 322--324
-
- []
-
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 333--336
+Underfull \hbox (badness 10000) in paragraph at lines 342--344
 
  []
 
 
-Overfull \hbox (37.67125pt too wide) in paragraph at lines 337--344
+Underfull \hbox (badness 10000) in paragraph at lines 353--356
+
+ []
+
+
+Overfull \hbox (37.67125pt too wide) in paragraph at lines 357--364
 |  $\OML/cmm/m/it/10 latest[]ID[]number[]from[]table \OT1/cmr/m/n/10 = \OML/cmm
 /m/it/10 this:authentication[]table\OT1/cmr/m/n/10 [\OML/cmm/m/it/10 node[]numb
 er\OT1/cmr/m/n/10 ]\OML/cmm/m/it/10 :get[]Latest[]Message[]ID\OT1/cmr/m/n/10 ()
@@ -322,33 +333,43 @@ er\OT1/cmr/m/n/10 ]\OML/cmm/m/it/10 :get[]Latest[]Message[]ID\OT1/cmr/m/n/10 ()
  []
 
 
-Overfull \hbox (26.02243pt too wide) in paragraph at lines 337--344
+Overfull \hbox (26.02243pt too wide) in paragraph at lines 357--364
 |  $\OML/cmm/m/it/10 this:authentication[]table\OT1/cmr/m/n/10 [\OML/cmm/m/it/1
 0 node[]number\OT1/cmr/m/n/10 ]\OML/cmm/m/it/10 :update[]Latest[]Message[]ID\OT
 1/cmr/m/n/10 (\OML/cmm/m/it/10 current[]message[]ID\OT1/cmr/m/n/10 )$ 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 337--344
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 360--361
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 362--364
+Underfull \hbox (badness 10000) in paragraph at lines 357--364
 
  []
 
 [7]
-Underfull \hbox (badness 10000) in paragraph at lines 365--366
+Underfull \hbox (badness 10000) in paragraph at lines 381--391
 
  []
 
-[8] (./DP2 report.aux)
+
+Underfull \hbox (badness 10000) in paragraph at lines 392--398
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 405--406
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 407--409
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 410--411
+
+ []
+
+[8] [9] (./DP2 report.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
@@ -372,10 +393,10 @@ local/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/loc
 al/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/loca
 l/texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/
 texlive/2012/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb>
-Output written on "DP2 report.pdf" (8 pages, 152729 bytes).
+Output written on "DP2 report.pdf" (9 pages, 158366 bytes).
 PDF statistics:
- 75 PDF objects out of 1000 (max. 8388607)
- 53 compressed objects within 1 object stream
+ 78 PDF objects out of 1000 (max. 8388607)
+ 55 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
