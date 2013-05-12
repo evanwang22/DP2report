@@ -214,11 +214,11 @@ After the routing protocol has finished its update period, it will start the int
   \item The Explicit Congestion Notification Bit (ECNB), which takes value 1 if going to node j takes us to a path that is considered congested or 0 otherwise.
 \end{enumerate}
 
-The cost of path is defined by the following equation:
+If the cost of an edge is $p_{i}$, then the cost of a path is defined by the following equation:
 
 $$  Total \ Expected \ Transmition \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
 
-It's important to realize that we are seeking to minimize this metric.
+It's important to realize that we are seeking to minimize this metric. Also note that the sum yields to sum the cost paths from the base to the current node.
 \\
 
 To fill out the table we do the following:
