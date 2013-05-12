@@ -263,9 +263,8 @@ Recall that we only send images when the priority Queue for advertisments and pu
   \item If our current best path is congested, then add information to the image packet specifying which (additional) node to avoid and now try re-routing by considering the next best link. When considering a best next link, only consider a next node where neither of its adjacent nodes has an ECNB of 1. 
   \item If the current image packet is marked as requiered re-routing, then compute another table of neighbors, but this time, exclude the congested nodes whenever Dijkstra's shortest path is computed.
   \item If at this point, we cannot re-route to any node because all of the adjacent nodes are next to too many nodes with an ECN of 1, then route using to the best path with a contention window to half the size and go back to step 1. Note: the contention window for an image cannot decrease to less than 10 packets.
-  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window. 
+  \item If we receive all acks and the ECN bit of the node we are sending packets did not change to 1, then increase the contention window and return to step 1.
 \end{enumerate}
-
 
 
 \subsection{Authentication}
