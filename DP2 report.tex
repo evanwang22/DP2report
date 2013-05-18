@@ -242,7 +242,7 @@ small portion that is used to append other information.
 
 \subsubsection{Throughput Metric and the Routing Table}
 
-After the routing protocol has finished its update period, it will start the integration phase yield an
+After the routing protocol has finished its update period, it will start the integration phase to yield an
 updated graph for the current state of the network topology. The cost in each edge will be $1/p_{i}$, 
 where $p_{i} = 1 - p_{loss}$ is the probability of success of sending to an adjacent node. The cost of an
 edge corresponds to the expected number of packets that a node has to send to yield one successful
@@ -263,7 +263,7 @@ $$  Total \ Expected \ Transmission \ Cost = \sum_{i=0}^{k}\frac{1}{p_{i}}$$
 \noindent To fill out the table we do the following:
 
 \begin{enumerate}
-  \item Do Dijkstra's single shortest path from the current node.  
+  \item Execute Dijkstra's single shortest path from the current node.  
   \item Insert to the table the shortest path to the base on the entry where the node's own number is located.
   \item Then run Dijkra's on every neighbor node to the current node. Notate the current values obtained be $d_{i}$.
   \item Then, insert for node i the value $d_{i}$ plus the cost of taking the link connecting the current node to the adjacent node. (Note that if current node number = i, then it just insert the minimum cost path from itself).
@@ -297,15 +297,12 @@ D & 17 & 1\\ [1ex]
 
 
 When sending images to the base, our goal is to try to send at maximum throughput with the current knowledge
-of the network. Therefore, in times of congestion the goal of our algorithm is to try to route around 
+of the network. Therefore, in times of heavy congestion, the goal of our algorithm is to try to route around 
 congestion, while still trying to attaining the maximum throughput with the current state of the network. 
-Note that it will use the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes.\\ 
-
-\noindent The main idea of the algorithm is very simple, if it can send the current packet through the best path, send 
-it through that path, else try to re-route by excluding the congested node in the path.\\
+Each node achieves this by using the Explicit Congestion Notification Bit [ECNB] sent by adjacent nodes.\\ 
  
 
-At the initialization phase, the contention window is of size 100 packets and never reaches values bellow 10 nor above 200 packets. Then the routing algorithm is implemented as follows by each node:
+At the initialization phase, the contention window is 100 packets large and never reaches values below 10 or above 200 packets. The routing algorithm is implemented by each node as follows:
 
 \begin{enumerate}
 
@@ -320,7 +317,7 @@ At the initialization phase, the contention window is of size 100 packets and ne
 \subsubsection{Explicit Congestion Notification Bit}
 
 An important but challening aspect of dealing with congestion is deciding whether a node is congested or not.
-Consider the figure 2 below.
+Consider figure 2 below.
 \\
  
 \begin{figure}[ht!]
@@ -330,16 +327,11 @@ Consider the figure 2 below.
 \end{figure}
 
 \noindent When a node has a queue length greather than k, then it will advertise that it is congested by sending an ECNB packet to all its neighbors. k is initialized for every node as 100. One way that k is changed depends 
-whether a packet was dropped or not. If a packet is
-dropped, it must inform its getting congested, therefore decrease k 
-in between its own value and 50:
-
+whether a packet was dropped or not. If a packet is dropped, a node should report that it is becoming congested by decreasing k as follows:
 
 $$ k = max\{50, \frac{k + 50}{2} \}$$
 
-\noindent Every two scans we will adjust the value k. The first link to the path were you are rounting packets
-roughly determines the emptying rate. Therefore, depending on the percentage change of the value of this link, we will determine how much to change the thershold.
-\\
+\noindent k is adjusted every two scans. The first link in a path determines the emptying rate of the first node in that path. Therefore, we base our change in the threshold on the transmission probability of this link.
 
 \noindent If the percentage change is positive, then it means we expect to send less packets, so the rate of packets
 leaving the queue is expected to decrease. In this case, we decrease the value of k:
